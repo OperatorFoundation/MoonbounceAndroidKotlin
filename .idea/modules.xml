@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/MoonbounceAndroidKotlin.iml" filepath="$PROJECT_DIR$/.idea/modules/MoonbounceAndroidKotlin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MoonbounceAndroidKotlin.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MoonbounceAndroidKotlin.app.iml" />
     </modules>
   </component>
 </project>
