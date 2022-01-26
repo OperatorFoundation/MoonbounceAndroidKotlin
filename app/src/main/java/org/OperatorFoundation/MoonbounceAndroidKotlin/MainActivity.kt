@@ -15,7 +15,7 @@ class MoonbounceAndroidKotlinVpnService : AppCompatActivity() {
         val connectButton = findViewById<Button>(R.id.connect_button)
 
         connectButton.setOnClickListener {
-            // Verify the connectButton parameter is correct.
+
             onClick(connectButton)
         }
     }
