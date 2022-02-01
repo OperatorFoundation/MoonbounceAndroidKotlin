@@ -24,7 +24,7 @@ class VpnService: VpnService() {
             try {
                 //a. Configure the TUN and get the interface.
                 mInterface = builder.setSession("MoonbounceAndroidKotlinVpnService")
-                    //transport server - 159.203.158.90
+                    //trans¸ort server - 159.203.158.90
                     //let shadow socks ServerPort: UInt16 = 2345
                     //let replicantServerPort: UInt16 = 2277
                     // Uncertain if I have the correct IP address in .addAddress
