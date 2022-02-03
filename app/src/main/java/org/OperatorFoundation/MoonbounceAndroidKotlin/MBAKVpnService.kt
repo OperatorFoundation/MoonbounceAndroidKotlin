@@ -1,16 +1,19 @@
 package org.OperatorFoundation.MoonbounceAndroidKotlin
 
-import android.net.VpnService
+import android.R
 import android.content.Intent
+import android.net.VpnService
 import android.os.ParcelFileDescriptor
+import android.widget.Button
+import android.widget.TextView
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.lang.Exception
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.DatagramChannel
 
-class VpnService: VpnService() {
+
+class MBAKVpnService: VpnService() {
     private var mThread: Thread? = null
     private var mInterface: ParcelFileDescriptor? = null
 
@@ -22,13 +25,19 @@ class VpnService: VpnService() {
         // Start a new session by creating a new thread.
         mThread = Thread({
             try {
+                //var debugTextView.text = "Blank"
+                println("Entered try block of onStartCommand function")
                 //a. Configure the TUN and get the interface.
                 mInterface = builder.setSession("MoonbounceAndroidKotlinVpnService")
                     //trans¸ort server - 159.203.158.90
                     //let shadow socks ServerPort: UInt16 = 2345
                     //let replicantServerPort: UInt16 = 2277
                     // Uncertain if I have the correct IP address in .addAddress
-                    .addAddress("159.203.158.90", 24)
+                    // 127.0.0.1 this connects to your local computer
+                    //.addAddress("159.203.158.90", 24)
+                        // local host connects to your local IP without connecting
+                        // anyone can use this address it will do the same thing
+                    .addAddress("127.0.0.1", 24)
                     .addDnsServer("8.8.8.8")
                     .addRoute("0.0.0.0", 0).establish()
                 //b. Packets to be sent are queued in this input stream
@@ -46,7 +55,8 @@ class VpnService: VpnService() {
                 //let shadow socks ServerPort: UInt16 = 2345
                 //let replicantServerPort: UInt16 = 2277
                 // Uncertain if we have the correct hostname IP address or port number
-                val socketAddress = InetSocketAddress("159.203.158.90", 2345)
+                //val socketAddress = InetSocketAddress("159.203.158.90", 2345)
+                val socketAddress = InetSocketAddress("127.0.0.1", 2345)
                 tunnel.connect(socketAddress)
                 //d. Protect this socket, so package send by it will not be feedback to the vpn service.
                 // Does this protect() ensure that the VPN Service itself cannot intercept the package either.

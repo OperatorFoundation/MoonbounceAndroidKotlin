@@ -21,6 +21,7 @@ class MoonbounceAndroidKotlinVpnService : AppCompatActivity() {
     }
 
     fun onClick(v: View?) {
+        println("Clicked the connect button")
         val intent = VpnService.prepare(applicationContext)
         if (intent != null) {
             startActivityForResult(intent, 0)
