@@ -1,11 +1,13 @@
 package org.OperatorFoundation.MoonbounceAndroidKotlin
 
+import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.view.View
 import android.net.VpnService
 import android.widget.Button
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MoonbounceAndroidKotlinVpnService : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,19 +24,18 @@ class MoonbounceAndroidKotlinVpnService : AppCompatActivity() {
 
     fun onClick(v: View?) {
         println("Clicked the connect button")
-        val intent = VpnService.prepare(applicationContext)
-        if (intent != null) {
-            startActivityForResult(intent, 0)
+        val prepareIntent = VpnService.prepare(applicationContext)
+        if (prepareIntent != null) {
+            var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val startIntent = Intent(this, MoonbounceAndroidKotlinVpnService::class.java)
+                    startService(startIntent)
+                }
+            }
+            resultLauncher.launch(prepareIntent)
         } else {
-            onActivityResult(0, RESULT_OK, null)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == AppCompatActivity.RESULT_OK) {
-            val intent = Intent(this, MoonbounceAndroidKotlinVpnService::class.java)
-            startService(intent)
+            val startIntent = Intent(this, MoonbounceAndroidKotlinVpnService::class.java)
+            startService(startIntent)
         }
     }
 }
