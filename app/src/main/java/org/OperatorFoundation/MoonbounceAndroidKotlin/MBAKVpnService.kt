@@ -12,70 +12,70 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.DatagramChannel
 
-
 class MBAKVpnService: VpnService() {
     private var mThread: Thread? = null
     private var mInterface: ParcelFileDescriptor? = null
 
     // configure a builder for the interface.
     private var builder: Builder = Builder()
+    val transportServerIP = ""
+    val localHost = "127.0.0.1"
+    val replicantServerPort = 2277
+    val shadowSocksServerPort = 2345
+    val dnsServerIP = "8.8.8.8"
+    val route = "0.0.0.0"
+    var subnetMask = 32
 
     // Services interface
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Start a new session by creating a new thread.
         mThread = Thread({
             try {
-                //var debugTextView.text = "Blank"
                 println("Entered try block of onStartCommand function")
                 //a. Configure the TUN and get the interface.
-                mInterface = builder.setSession("MoonbounceAndroidKotlinVpnService")
-                    //trans¸ort server - 159.203.158.90
-                    //let shadow socks ServerPort: UInt16 = 2345
-                    //let replicantServerPort: UInt16 = 2277
-                    // Uncertain if I have the correct IP address in .addAddress
-                    // 127.0.0.1 this connects to your local computer
-                    //.addAddress("159.203.158.90", 24)
-                        // local host connects to your local IP without connecting
-                        // anyone can use this address it will do the same thing
-                    .addAddress("127.0.0.1", 24)
-                    .addDnsServer("8.8.8.8")
-                    .addRoute("0.0.0.0", 0).establish()
+                prepareBuilder()
+
                 //b. Packets to be sent are queued in this input stream
                 val input = FileInputStream(
                     mInterface!!.fileDescriptor
                 )
+                println("created input stream")
                 //b. Packets received need to be written to this output stream.
                 val output = FileOutputStream(
                     mInterface!!.fileDescriptor
                 )
+                println("created output stream")
+
                 //c. The UDP channel can be used to pass/get ip package to/from server
                 val tunnel: DatagramChannel = DatagramChannel.open()
+                println("called DatagramChannel.open()")
                 // Connect to the server, localhost is used for demonstration only.
-                //transport server - 159.203.158.90
-                //let shadow socks ServerPort: UInt16 = 2345
-                //let replicantServerPort: UInt16 = 2277
-                // Uncertain if we have the correct hostname IP address or port number
-                //val socketAddress = InetSocketAddress("159.203.158.90", 2345)
-                val socketAddress = InetSocketAddress("127.0.0.1", 2345)
+                val socketAddress = InetSocketAddress(localHost, shadowSocksServerPort)
                 tunnel.connect(socketAddress)
+                println("called tunnel.connect()")
+
                 //d. Protect this socket, so package send by it will not be feedback to the vpn service.
-                // Does this protect() ensure that the VPN Service itself cannot intercept the package either.
                 protect(tunnel.socket())
+                println("called protect(), starting loop")
+
                 //e. Use a loop to pass packets.
-                while (true) {
+                while (true)
+                {
                     // this is where we will add code to handle the packets.
-                    //get packet with in
+                    //get packet within
                     //put packet to tunnel
-                    //get packet form tunnel
+                    //get packet from tunnel
                     //return packet with out
                     //sleep is a must
                     // Can replace input.available() with an int for testing purposes
-                    val arrayBuffer = ByteArray(input.available())
+                    //val arrayBuffer = ByteArray(input.available())
+                    val arrayBuffer = ByteArray(10)
                     val bytesRead = input.read(arrayBuffer)
-                    if (bytesRead != input.available())
-                    {
-                        println("Bytes read not equal to bytes available")
-                    }
+//                    if (bytesRead != input.available())
+//                    {
+//                        println("Bytes read not equal to bytes available")
+//                    }
+                    println("bytes read: $bytesRead")
                     // This is intended just to receive the packet we just put in the tunnel
                     val byteBuffer = ByteBuffer.allocate(arrayBuffer.size)
                     // put and send may not be in the correct order...
@@ -87,22 +87,33 @@ class MBAKVpnService: VpnService() {
                     //output.write()
                     Thread.sleep(100)
                 }
-            } catch (e: Exception) {
+                println("exited loop")
+            }
+            catch (e: Exception)
+            {
                 // Catch any exception
                 e.printStackTrace()
-            } finally {
-                try {
-                    if (mInterface != null) {
+            }
+            finally
+            {
+                try
+                {
+                    if (mInterface != null)
+                    {
                         mInterface!!.close()
                         mInterface = null
                     }
-                } catch (e: Exception) {
+                }
+                catch (e: Exception)
+                {
+                    println(e)
                 }
             }
         }, "MyVpnRunnable")
 
         //start the service
         mThread!!.start()
+        println("start() called")
         return START_STICKY
     }
 
@@ -112,5 +123,15 @@ class MBAKVpnService: VpnService() {
             mThread!!.interrupt()
         }
         super.onDestroy()
+    }
+
+    fun prepareBuilder() {
+
+        mInterface = builder.setSession("MoonbounceAndroidKotlinVpnService")
+            .addAddress(localHost, subnetMask)
+            .addDnsServer(dnsServerIP)
+            .addRoute(route, 0).establish()
+
+        println("finished setting up builder")
     }
 }
