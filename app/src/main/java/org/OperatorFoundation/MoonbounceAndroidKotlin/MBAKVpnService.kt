@@ -74,6 +74,9 @@ class MBAKVpnService: VpnService() {
 
             // Read from the socket to get our handshake information from the server as bytes (this is actually in Flower format)
             // Use this information for builder
+            // 2 bytes (length of message in NetworkByteOrder),
+            // 1 byte (type of message - should be a 6 here which indicates IPV4 assignment message),
+            // 4 bytes (the actual IPV4 assignment)
 
             // Call VpnService.Builder methods to configure a new local TUN interface on the device for VPN traffic.
             prepareBuilder()
