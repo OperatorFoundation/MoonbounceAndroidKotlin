@@ -1,26 +1,22 @@
 package org.OperatorFoundation.MoonbounceAndroidKotlin
 
-import android.R
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
 import android.content.Intent
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
-import java.net.DatagramSocket
 import java.net.InetSocketAddress
+import java.net.Socket
 
 
 class MBAKVpnService: VpnService() {
     private var mThread: Thread? = null
-    private var mInterface: ParcelFileDescriptor? = null
+    private var parcelFileDescriptor: ParcelFileDescriptor? = null
 
     private var builder: Builder = Builder()
     var transportServerIP = ""
     var transportServerPort = 2277
     val dnsServerIP = "8.8.8.8"
     val route = "0.0.0.0"
-    val subnetMask = 32
+    val subnetMask = 8
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
@@ -67,7 +63,7 @@ class MBAKVpnService: VpnService() {
 
         try
         {
-            var socket = DatagramSocket()
+            var socket = Socket()
             // Call VpnService.protect() to keep your app's tunnel socket outside of the system VPN and avoid a circular connection.
 
             protect(socket)
@@ -76,9 +72,15 @@ class MBAKVpnService: VpnService() {
             val socketAddress = InetSocketAddress(transportServerIP, transportServerPort)
             socket.connect(socketAddress)
 
+            // Read from the socket to get our handshake information from the server as bytes (this is actually in Flower format)
+            // Use this information for builder
+
             // Call VpnService.Builder methods to configure a new local TUN interface on the device for VPN traffic.
             prepareBuilder()
 
+            // ParcelFileDescriptor will read and write here
+            // Thread for reading
+            // Thread for writing
         }
         catch (error: Exception)
         {
@@ -227,8 +229,8 @@ class MBAKVpnService: VpnService() {
     {
         // Create a local TUN interface using predetermined addresses.
         //  You typically use values returned from the VPN gateway during handshaking.
-        mInterface = builder.setSession("MoonbounceAndroidKotlinVpnService")
-            .addAddress(transportServerIP, subnetMask)
+        parcelFileDescriptor = builder.setSession("MoonbounceAndroidKotlinVpnService")
+            .addAddress("10.0.0.3", subnetMask) // Local IP Assigned by server on handshake
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
             .establish() // Call VpnService.Builder.establish() so that the system establishes the local TUN interface and begins routing traffic through the interface.
