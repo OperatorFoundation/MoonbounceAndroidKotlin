@@ -18,9 +18,10 @@
 
     <EditText
         android:id="@+id/server_address"
+        android:inputType="none"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Server IP Address:                 "
+        android:hint="Enter Server IP Address "
         app:layout_constraintTop_toBottomOf="@id/connect_button"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -28,9 +29,12 @@
 
     <EditText
         android:id="@+id/server_port"
+        android:inputType="number"
+        android:maxLength="5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Server Port:                 "
+        android:hint="Enter Server Port Number"
+        android:imeOptions="actionDone"
         app:layout_constraintTop_toBottomOf="@id/server_address"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

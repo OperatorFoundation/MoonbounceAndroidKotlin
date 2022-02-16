@@ -21,4 +21,10 @@ class ExampleInstrumentedTest {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("org.OperatorFoundation.MoonbounceAndroidKotlin", appContext.packageName)
     }
+
+    @Test
+    fun portConnected() {
+
+    }
+
 }

@@ -2,7 +2,9 @@ package org.OperatorFoundation.MoonbounceAndroidKotlin
 
 import android.content.Intent
 import android.net.VpnService
+import android.net.ipsec.ike.TunnelModeChildSessionParams
 import android.os.ParcelFileDescriptor
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -78,11 +80,32 @@ class MBAKVpnService: VpnService() {
             // 1 byte (type of message - should be a 6 here which indicates IPV4 assignment message),
             // 4 bytes (the actual IPV4 assignment)
 
+            // If we want to do IPV6 read the first two bytes and that will be the size of the byte array
+            // at that point, that's when we'll use messageType to create an if statement depending of
+            // if the byte is 6 or not indicating IPV4
+            var handshakeInformation = ByteArray(7)
+            socket.getInputStream().read(handshakeInformation)
+            var messageLength = handshakeInformation.sliceArray(0 until 1) // First two bytes
+            var messageType = handshakeInformation[2] // 3rd Byte (which should be a 6 to indicate IPV4)
+            var ipv4Assignment = handshakeInformation.sliceArray(3 until 7)
+
+            var inetAddress = InetAddress.getByAddress(ipv4Assignment)
+            var ipv4AssignmentString = inetAddress.toString()
+
             // Call VpnService.Builder methods to configure a new local TUN interface on the device for VPN traffic.
-            prepareBuilder()
+            prepareBuilder(ipv4AssignmentString)
 
             // ParcelFileDescriptor will read and write here
             // Thread for reading
+            var readThread = Thread {
+                try
+                {
+                    // ParcelFileDescriptor does not have any read/write methods not sure what to do here.
+                  //   parcelFileDescriptor
+                } catch (error: Exception)
+                {
+                }
+                }
             // Thread for writing
         }
         catch (error: Exception)
@@ -228,12 +251,13 @@ class MBAKVpnService: VpnService() {
         super.onDestroy()
     }
 
-    fun prepareBuilder()
+    fun prepareBuilder(ipv4AssignmentString: String)
     {
         // Create a local TUN interface using predetermined addresses.
         //  You typically use values returned from the VPN gateway during handshaking.
         parcelFileDescriptor = builder.setSession("MoonbounceAndroidKotlinVpnService")
-            .addAddress("10.0.0.3", subnetMask) // Local IP Assigned by server on handshake
+            // .addAddress("10.0.0.3", subnetMask) // Local IP Assigned by server on handshake
+            .addAddress(ipv4AssignmentString, subnetMask) // Local IP Assigned by server on handshake
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
             .establish() // Call VpnService.Builder.establish() so that the system establishes the local TUN interface and begins routing traffic through the interface.
