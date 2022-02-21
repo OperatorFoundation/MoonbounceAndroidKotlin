@@ -14,8 +14,30 @@ import java.lang.Exception
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
 
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+class MainActivity : AppCompatActivity()
+{
+    var ipAddress = ""
+    var serverPort = 0
+    var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    { result ->
+        if (result.resultCode == Activity.RESULT_OK) // User has now given permission
+        {
+            // Start the VPN Service
+            val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
+            vpnServiceIntent.putExtra(SERVER_IP, ipAddress)
+            vpnServiceIntent.putExtra(SERVER_PORT, serverPort)
+            startService(vpnServiceIntent)
+        }
+        else
+        {
+            // Once this is a library, we may want to return an error and/or the result code to the calling application.
+            print("Attempted to get VPN Service permissions from the user, but failed.")
+            print(result.resultCode)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -31,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     {
         println("Clicked the connect button")
         val ipEditText = findViewById<EditText>(R.id.server_address)
-        val ipAddress = ipEditText.text.toString()
+        ipAddress = ipEditText.text.toString()
 
         val portEditText = findViewById<EditText>(R.id.server_port)
         val serverPortString = portEditText.text.toString()
@@ -44,29 +66,13 @@ class MainActivity : AppCompatActivity() {
         {
             try
             {
-                val serverPort = serverPortString.toInt()
+                serverPort = serverPortString.toInt()
 
                 // Call VpnService.prepare() to ask for permission (when needed).
                 val vpnPrepareIntent = VpnService.prepare(applicationContext)
                 if (vpnPrepareIntent != null) // User has not yet given permission
                 {
-                    var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-                    { result ->
-                        if (result.resultCode == Activity.RESULT_OK) // User has now given permission
-                        {
-                            // Start the VPN Service
-                            val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-                            vpnServiceIntent.putExtra(SERVER_IP, ipAddress)
-                            vpnServiceIntent.putExtra(SERVER_PORT, serverPort)
-                            startService(vpnServiceIntent)
-                        }
-                        else
-                        {
-                            // Once this is a library, we may want to return an error and/or the result code to the calling application.
-                            print("Attempted to get VPN Service permissions from the user, but failed.")
-                            print(result.resultCode)
-                        }
-                    }
+
                     // Launches an activity to request permission
                     resultLauncher.launch(vpnPrepareIntent)
                 }

@@ -4,15 +4,23 @@ import android.content.Intent
 import android.net.VpnService
 import android.net.ipsec.ike.TunnelModeChildSessionParams
 import android.os.ParcelFileDescriptor
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 class MBAKVpnService: VpnService() {
-    private var mThread: Thread? = null
+    //private var mThread: Thread? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
-
+    val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    val externalScope: CoroutineScope = CoroutineScope(coroutineContext)
+    val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
     private var builder: Builder = Builder()
     var transportServerIP = ""
     var transportServerPort = 2277
@@ -22,52 +30,44 @@ class MBAKVpnService: VpnService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
-        connect(intent)
+        externalScope.launch{connect(intent)}
         return START_STICKY
     }
 
-    fun connect(intent: Intent?)
-    {
+    suspend fun connect(intent: Intent?) {
 
         var maybeIP: String?
         val maybePort: Int
 
-        if (intent != null)
-        {
+        if (intent != null) {
             maybeIP = intent.getStringExtra(SERVER_IP)
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
-        }
-        else
-        {
+        } else {
             print("MBAKVpnService intent was null")
             return
         }
 
-        if (maybeIP != null)
-        {
+        if (maybeIP != null) {
             transportServerIP = maybeIP
-        }
-        else
-        {
+        } else {
             print("Tried to connect without a valid IP")
             return
         }
 
-        if (maybePort != 0)
-        {
+        if (maybePort != 0) {
             transportServerPort = maybePort
-        }
-        else
-        {
+        } else {
             print("Tried to connect without a valid port")
             return
         }
 
-        try
+        externalScope.launch(defaultDispatcher)
         {
-            var socket = Socket()
-            // Call VpnService.protect() to keep your app's tunnel socket outside of the system VPN and avoid a circular connection.
 
+        try {
+            var socket = Socket()
+
+            // Call VpnService.protect() to keep your app's tunnel socket outside of the system VPN and avoid a circular connection.
             protect(socket)
 
             // Call DatagramSocket.connect() to connect your app's tunnel socket to the VPN gateway.
@@ -85,8 +85,10 @@ class MBAKVpnService: VpnService() {
             // if the byte is 6 or not indicating IPV4
             var handshakeInformation = ByteArray(7)
             socket.getInputStream().read(handshakeInformation)
-            var messageLength = handshakeInformation.sliceArray(0 until 1) // First two bytes
-            var messageType = handshakeInformation[2] // 3rd Byte (which should be a 6 to indicate IPV4)
+            var messageLength = handshakeInformation.sliceArray(0..1) // First two bytes
+
+            var messageType =
+                handshakeInformation[2] // 3rd Byte (which should be a 6 to indicate IPV4)
             var ipv4Assignment = handshakeInformation.sliceArray(3 until 7)
 
             var inetAddress = InetAddress.getByAddress(ipv4Assignment)
@@ -95,25 +97,13 @@ class MBAKVpnService: VpnService() {
             // Call VpnService.Builder methods to configure a new local TUN interface on the device for VPN traffic.
             prepareBuilder(ipv4AssignmentString)
 
-            // ParcelFileDescriptor will read and write here
-            // Thread for reading
-            var readThread = Thread {
-                try
-                {
-                    // ParcelFileDescriptor does not have any read/write methods not sure what to do here.
-                  //   parcelFileDescriptor
-                } catch (error: Exception)
-                {
-                }
-                }
-            // Thread for writing
-        }
-        catch (error: Exception)
-        {
+            // ParcelFileDescriptor will read and write here (builder)
+
+        } catch (error: Exception) {
             print("Error creating socket")
             print(error)
-            return
         }
+    } .join()
     }
 //    // Services interface
 //    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
@@ -255,8 +245,8 @@ class MBAKVpnService: VpnService() {
     {
         // Create a local TUN interface using predetermined addresses.
         //  You typically use values returned from the VPN gateway during handshaking.
-        parcelFileDescriptor = builder.setSession("MoonbounceAndroidKotlinVpnService")
-            // .addAddress("10.0.0.3", subnetMask) // Local IP Assigned by server on handshake
+        parcelFileDescriptor = builder
+            .setSession("MoonbounceAndroidKotlinVpnService")
             .addAddress(ipv4AssignmentString, subnetMask) // Local IP Assigned by server on handshake
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
