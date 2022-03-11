@@ -14,8 +14,8 @@ import java.net.Socket
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-
-class MBAKVpnService: VpnService() {
+class MBAKVpnService: VpnService()
+{
     //private var mThread: Thread? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     val coroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -70,7 +70,7 @@ class MBAKVpnService: VpnService() {
             // Call VpnService.protect() to keep your app's tunnel socket outside of the system VPN and avoid a circular connection.
             protect(socket)
 
-            // Call DatagramSocket.connect() to connect your app's tunnel socket to the VPN gateway.
+            // Call socket.connect() to connect your app's tunnel socket to the VPN gateway.
             val socketAddress = InetSocketAddress(transportServerIP, transportServerPort)
             socket.connect(socketAddress)
 
@@ -84,6 +84,10 @@ class MBAKVpnService: VpnService() {
             // at that point, that's when we'll use messageType to create an if statement depending of
             // if the byte is 6 or not indicating IPV4
             var handshakeInformation = ByteArray(7)
+
+            //val flowerConnection = FlowerConnection()
+
+
             socket.getInputStream().read(handshakeInformation)
             var messageLength = handshakeInformation.sliceArray(0..1) // First two bytes
 
