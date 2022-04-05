@@ -49,6 +49,11 @@ class MainActivity : AppCompatActivity()
         }
     }
 
+
+    // TODO: UDP Test Button
+    // TODO: TCP Test Button
+    // TODO: Display test results text
+
     fun onClick(v: View?)
     {
         println("Clicked the connect button")
