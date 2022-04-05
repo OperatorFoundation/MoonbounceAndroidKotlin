@@ -8,6 +8,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.operatorfoundation.flower.FlowerConnection
+import org.operatorfoundation.transmission.TransmissionConnection
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -84,9 +86,6 @@ class MBAKVpnService: VpnService()
             // at that point, that's when we'll use messageType to create an if statement depending of
             // if the byte is 6 or not indicating IPV4
             var handshakeInformation = ByteArray(7)
-
-            //val flowerConnection = FlowerConnection()
-
 
             socket.getInputStream().read(handshakeInformation)
             var messageLength = handshakeInformation.sliceArray(0..1) // First two bytes
