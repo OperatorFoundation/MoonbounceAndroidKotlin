@@ -16,9 +16,33 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/Test_TCP"
+        android:layout_marginRight="@android:dimen/app_icon_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test TCP"
+        app:layout_constraintTop_toBottomOf="@id/connect_button"
+        app:layout_constraintRight_toRightOf="@id/Test_UDP"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/server_address" />
+
+    <Button
+        android:id="@+id/Test_UDP"
+        android:layout_marginLeft="@android:dimen/app_icon_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test UDP"
+        app:layout_constraintTop_toBottomOf="@id/connect_button"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/Test_TCP"
+        app:layout_constraintBottom_toTopOf="@id/server_address" />
+
+
     <EditText
         android:id="@+id/server_address"
-        android:inputType="none"
+        android:inputType="phone"
+        android:name='IP'
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="Enter Server IP Address "
