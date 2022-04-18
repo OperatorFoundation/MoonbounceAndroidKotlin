@@ -86,7 +86,7 @@ class MBAKVpnService: VpnService()
 
             if (flowerResponse == null)
             {
-                Assert.fail()
+                print("🥀 Moonbounce did not receive a Flower response from the server. 164🥀")
             }
             else
             {
