@@ -9,6 +9,7 @@
     <EditText
         android:id="@+id/server_address"
         android:name='IP'
+        android:text="0.0.0.0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -19,10 +20,12 @@
         app:layout_constraintBottom_toTopOf="@+id/server_port"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center_horizontal" />
 
     <EditText
         android:id="@+id/server_port"
+        android:text="1234"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="Enter Server Port Number"
@@ -34,7 +37,8 @@
         app:layout_constraintBottom_toTopOf="@+id/resultText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/server_address" />
+        app:layout_constraintTop_toBottomOf="@+id/server_address"
+        android:gravity="center_horizontal" />
 
     <TextView
         android:id="@+id/resultText"
