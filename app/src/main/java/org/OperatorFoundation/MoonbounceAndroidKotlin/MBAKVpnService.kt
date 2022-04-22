@@ -86,10 +86,12 @@ class MBAKVpnService: VpnService()
 
             if (flowerResponse == null)
             {
-                print("🥀 Moonbounce did not receive a Flower response from the server. 164🥀")
+                println("🥀 Moonbounce did not receive a Flower response from the server. 164🥀")
             }
             else
             {
+
+                println("@->-- Got a flower response!!")
                 when(flowerResponse.messageType)
                 {
                     MessageType.IPAssignV4Type ->
@@ -110,7 +112,7 @@ class MBAKVpnService: VpnService()
                             val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
 
                             vpnToServerCouroutineScope.launch {
-                                print("^^^^^^ Launching read coroutine")
+                                println("^^^^^^ Launching read coroutine")
                                 while(true)
                                 {
                                     // FIXME: Leave loop if the socket is closed
@@ -120,7 +122,7 @@ class MBAKVpnService: VpnService()
 
 
                             serverToVPNCoroutineScope.launch {
-                                print("^^^^^ Launching write coroutine")
+                                println("^^^^^ Launching write coroutine")
                                 while (true)
                                 {
                                     // FIXME: Leave loop if the socket is closed
@@ -129,12 +131,12 @@ class MBAKVpnService: VpnService()
                             }
 
                             udpCoroutineScope.launch {
-                                print("~~~~ Launching UDP Test")
+                                println("~~~~ Launching UDP Test")
                                 udpTest()
                             }
 
                             tcpCouroutineScope.launch {
-                                print("**** Launchinf TCP Test")
+                                println("**** Launchinf TCP Test")
                                 tcpTest()
                             }
                         }
