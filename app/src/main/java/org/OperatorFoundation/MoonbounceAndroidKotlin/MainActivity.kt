@@ -3,7 +3,6 @@ package org.OperatorFoundation.MoonbounceAndroidKotlin
 import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
-import android.view.View
 import android.net.VpnService
 import android.widget.Button
 import android.os.Bundle
@@ -34,8 +33,8 @@ class MainActivity : AppCompatActivity()
         else
         {
             // Once this is a library, we may want to return an error and/or the result code to the calling application.
-            print("Attempted to get VPN Service permissions from the user, but failed.")
-            print(result.resultCode)
+            println("Attempted to get VPN Service permissions from the user, but failed.")
+            println(result.resultCode)
         }
     }
 
@@ -51,34 +50,34 @@ class MainActivity : AppCompatActivity()
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
 
         connectButton.setOnClickListener {
-            connectClicked(connectButton)
+            connectClicked()
         }
 
         testTCPButton.setOnClickListener {
-            testTCPClicked(testTCPButton)
+            testTCPClicked()
         }
 
         testUDPButton.setOnClickListener {
-            testUDPClicked(testUDPButton)
+            testUDPClicked()
         }
 
     }
 
     // TODO: Display test results text
 
-    fun testTCPClicked(v: View?)
+    fun testTCPClicked()
     {
-        print("Test TCP Clicked.")
+        println("Test TCP Clicked.")
         resultText.text = "Test TCP Clicked."
     }
 
-    fun testUDPClicked(v: View?)
+    fun testUDPClicked()
     {
-        print("Test UDP Clicked.")
+        println("Test UDP Clicked.")
         resultText.text = "Test UDP Clicked."
     }
 
-    fun connectClicked(v: View?)
+    fun connectClicked()
     {
         println("Clicked the connect button")
         val ipEditText = findViewById<EditText>(R.id.server_address)
@@ -89,7 +88,7 @@ class MainActivity : AppCompatActivity()
 
         if (ipAddress.isEmpty() || ipAddress.isBlank())
         {
-            print("Can't connect without a valid IP Address")
+            println("Can't connect without a valid IP Address")
         }
         else
         {
@@ -101,7 +100,6 @@ class MainActivity : AppCompatActivity()
                 val vpnPrepareIntent = VpnService.prepare(applicationContext)
                 if (vpnPrepareIntent != null) // User has not yet given permission
                 {
-
                     // Launches an activity to request permission
                     resultLauncher.launch(vpnPrepareIntent)
                 }
@@ -116,7 +114,8 @@ class MainActivity : AppCompatActivity()
             }
             catch (error: Exception)
             {
-                print(error)
+                println("Error creating the VPN Service: " + error)
+                resultText.text
             }
         }
     }
