@@ -10,15 +10,15 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import java.lang.Exception
-
-val SERVER_PORT = "ServerPort"
-val SERVER_IP = "ServerIP"
+import org.operatorfoundation.moonbouncevpnservice.*
 
 class MainActivity : AppCompatActivity()
 {
     var ipAddress = ""
     var serverPort = 0
     lateinit var resultText: TextView
+
+    // BroadcastReceiver to show VPN status updates
 
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity()
                 else // The user has already given permission, and the VPN Service is already prepared
                 {
                     // Start the VPN Service
-                    val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
+                    val vpnServiceIntent = Intent(this, org.operatorfoundation.moonbouncevpnservice.MBAKVpnService::class.java)
                     vpnServiceIntent.putExtra(SERVER_IP, ipAddress)
                     vpnServiceIntent.putExtra(SERVER_PORT, serverPort)
                     startService(vpnServiceIntent)

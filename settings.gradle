@@ -9,3 +9,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MoonbounceAndroidKotlin"
 include ':app'
+include ':moonbounceVPNService'

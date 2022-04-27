@@ -1,18 +1,21 @@
-package org.operatorfoundation.moonbounceAndroidKotlin
+package org.operatorfoundation.moonbouncevpnservice
 
 import android.content.Intent
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
-import org.operatorfoundation.moonbounceAndroidKotlin.NetworkTests
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import kotlin.concurrent.thread
 
+val SERVER_PORT = "ServerPort"
+val SERVER_IP = "ServerIP"
+
 class MBAKVpnService: VpnService()
 {
     private var builder: Builder = Builder()
+    val networkTests = NetworkTests()
     var transportServerIP = ""
     var transportServerPort = 1234
     val dnsServerIP = "8.8.8.8"
@@ -56,8 +59,6 @@ class MBAKVpnService: VpnService()
                 thread(start = true) {
                     runServerToVPN(flowerConnection, inputStream, outputStream)
                 }
-
-                val networkTests = NetworkTests()
 
                 println("🌙 MBAKVpnService: Launching UDP Test")
                 thread(start = true) {

@@ -1,4 +1,4 @@
-package org.operatorfoundation.moonbounceAndroidKotlin
+package org.operatorfoundation.moonbouncevpnservice
 
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
