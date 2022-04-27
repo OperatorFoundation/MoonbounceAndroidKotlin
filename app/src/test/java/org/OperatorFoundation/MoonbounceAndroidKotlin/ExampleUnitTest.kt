@@ -1,4 +1,4 @@
-package org.OperatorFoundation.MoonbounceAndroidKotlin
+package org.operatorfoundation.moonbounceAndroidKotlin
 
 import org.junit.Test
 

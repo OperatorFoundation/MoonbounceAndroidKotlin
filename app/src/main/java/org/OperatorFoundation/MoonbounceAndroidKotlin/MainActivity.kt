@@ -1,4 +1,4 @@
-package org.OperatorFoundation.MoonbounceAndroidKotlin
+package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
@@ -21,20 +21,25 @@ class MainActivity : AppCompatActivity()
     lateinit var resultText: TextView
 
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-    { result ->
-        if (result.resultCode == Activity.RESULT_OK) // User has now given permission
+    {
+            result ->
+
+        if (result.resultCode == Activity.RESULT_OK) // User has granted the needed permissions
         {
             // Start the VPN Service
             val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
             vpnServiceIntent.putExtra(SERVER_IP, ipAddress)
             vpnServiceIntent.putExtra(SERVER_PORT, serverPort)
             startService(vpnServiceIntent)
+
+            resultText.text ="Starting the VPN service."
         }
         else
         {
-            // Once this is a library, we may want to return an error and/or the result code to the calling application.
-            println("Attempted to get VPN Service permissions from the user, but failed.")
-            println(result.resultCode)
+            println("Unable to launch VPN Service, the user did not grant the needed permissions.")
+            println(result)
+
+            resultText.text = "Unable to launch VPN Service, the user did not grant the needed permissions."
         }
     }
 
@@ -50,7 +55,7 @@ class MainActivity : AppCompatActivity()
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
 
         connectButton.setOnClickListener {
-            connectClicked()
+            connectTapped()
         }
 
         testTCPButton.setOnClickListener {
@@ -58,28 +63,28 @@ class MainActivity : AppCompatActivity()
         }
 
         testUDPButton.setOnClickListener {
-            testUDPClicked()
+            testUDPTapped()
         }
 
     }
 
-    // TODO: Display test results text
-
     fun testTCPClicked()
     {
+        // TODO: Implement UI for testing TCP
         println("Test TCP Clicked.")
-        resultText.text = "Test TCP Clicked."
+        resultText.text = "Test TCP Tapped."
     }
 
-    fun testUDPClicked()
+    fun testUDPTapped()
     {
+        // TODO: Implement UI for testing UDP
         println("Test UDP Clicked.")
-        resultText.text = "Test UDP Clicked."
+        resultText.text = "Test UDP Tapped."
     }
 
-    fun connectClicked()
+    fun connectTapped()
     {
-        println("Clicked the connect button")
+        println("Connect tapped.")
         val ipEditText = findViewById<EditText>(R.id.server_address)
         ipAddress = ipEditText.text.toString()
 
@@ -88,7 +93,9 @@ class MainActivity : AppCompatActivity()
 
         if (ipAddress.isEmpty() || ipAddress.isBlank())
         {
-            println("Can't connect without a valid IP Address")
+            println("A valid server IP and port are required to enable VPN services.")
+            resultText.text = "A valid server IP are required to enable VPN services."
+            return
         }
         else
         {
@@ -96,14 +103,14 @@ class MainActivity : AppCompatActivity()
             {
                 serverPort = serverPortString.toInt()
 
-                // Call VpnService.prepare() to ask for permission (when needed).
+                // VpnService.prepare() to ask for permission (when needed).
                 val vpnPrepareIntent = VpnService.prepare(applicationContext)
-                if (vpnPrepareIntent != null) // User has not yet given permission
+                if (vpnPrepareIntent != null) // The user has not yet given the necessary permissions
                 {
                     // Launches an activity to request permission
                     resultLauncher.launch(vpnPrepareIntent)
                 }
-                else // User has already given permission VPN Service is already prepared
+                else // The user has already given permission, and the VPN Service is already prepared
                 {
                     // Start the VPN Service
                     val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
@@ -114,8 +121,10 @@ class MainActivity : AppCompatActivity()
             }
             catch (error: Exception)
             {
-                println("Error creating the VPN Service: " + error)
-                resultText.text
+                val errorString = "There was an error creating the VPN Service: " + error.localizedMessage
+                println("There was an error creating the VPN Service: " + error.localizedMessage)
+                resultText.text = errorString
+                return
             }
         }
     }

@@ -1,4 +1,4 @@
-package org.OperatorFoundation.MoonbounceAndroidKotlin
+package org.operatorfoundation.moonbounceAndroidKotlin
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,7 +19,7 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("org.OperatorFoundation.MoonbounceAndroidKotlin", appContext.packageName)
+        assertEquals("org.operatorfoundation.moonbounceAndroidKotlin", appContext.packageName)
     }
 
     @Test

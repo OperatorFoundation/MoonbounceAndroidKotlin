@@ -1,269 +1,260 @@
-package org.OperatorFoundation.MoonbounceAndroidKotlin
+package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.content.Intent
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
-import kotlinx.coroutines.*
+import org.operatorfoundation.moonbounceAndroidKotlin.NetworkTests
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.InetAddress
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.concurrent.thread
 
 class MBAKVpnService: VpnService()
 {
-    var vpnToServerCouroutineScope = CoroutineScope(Dispatchers.Default + Job())
-    var serverToVPNCoroutineScope = CoroutineScope(Dispatchers.Default + Job())
-    var udpCoroutineScope = CoroutineScope(Dispatchers.Default + Job())
-    var tcpCouroutineScope = CoroutineScope(Dispatchers.Default + Job())
-
-
     private var builder: Builder = Builder()
     var transportServerIP = ""
-    var transportServerPort = 2277
+    var transportServerPort = 1234
     val dnsServerIP = "8.8.8.8"
     val route = "0.0.0.0"
     val subnetMask = 8
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
-        connect(intent)
-        //externalScope.launch{connect(intent)}
+        getConnectInfoFromIntent(intent)
+
+        thread(start = true) {
+            connect()
+        }
+
         return START_STICKY
     }
 
-    fun connect(intent: Intent?)
+    fun connect()
     {
-        val maybeIP: String?
-        val maybePort: Int
-
-        if (intent != null)
-        {
-            maybeIP = intent.getStringExtra(SERVER_IP)
-            maybePort = intent.getIntExtra(SERVER_PORT, 0)
-        }
-        else
-        {
-            println("🌙 MBAKVpnService intent was null")
-            return
-        }
-
-        if (maybeIP != null)
-        {
-            transportServerIP = maybeIP
-        }
-        else
-        {
-            println("🌙 Tried to connect without a valid IP")
-            return
-        }
-
-        if (maybePort != 0)
-        {
-            transportServerPort = maybePort
-        }
-        else
-        {
-            println("🌙 Tried to connect without a valid port")
-            return
-        }
-
         try
         {
-            val transmissionConnection = TransmissionConnection(transportServerIP, transportServerPort, ConnectionType.TCP, null)
-            protect(transmissionConnection.tcpConnection!!)
-
-            val flowerConnection = FlowerConnection(transmissionConnection, null)
-            val messageData = IPRequestV4().data
-            val ipRequest = Message(messageData)
-
-            println("\n🌙 is attempting to write a 🌻 message...")
-            flowerConnection.writeMessage(ipRequest)
-
-            println("\n🌙 is attempting to read a 🌻 message...")
-            val flowerResponse = flowerConnection.readMessage()
-
-            when(flowerResponse.messageType)
+            thread(start = true)
             {
-                MessageType.IPAssignV4Type ->
+                val transmissionConnection = TransmissionConnection(transportServerIP, transportServerPort, ConnectionType.TCP, null)
+                protect(transmissionConnection.tcpConnection!!)
+
+                val flowerConnection = FlowerConnection(transmissionConnection, null)
+                val parcelFileDescriptor = handshake(flowerConnection)
+
+                if (parcelFileDescriptor == null)
                 {
-                    println("\n🌙 Got a 🌻 IPV4 Assignment!!")
-                    val messageContent = flowerResponse.content as IPAssignV4
-                    val inet4AddressData = messageContent.inet4Address.address
-
-                    val inetAddress = InetAddress.getByAddress(inet4AddressData)
-                    val ipv4AssignmentString = inetAddress.toString()
-
-                    // Call VpnService.Builder methods to configure a new local TUN interface on the device for VPN traffic.
-                    val parcelFileDescriptor = prepareBuilder(ipv4AssignmentString)
-
-                    // ParcelFileDescriptor will read and write here (builder)
-                    if (parcelFileDescriptor != null)
-                    {
-                        val outputStream = FileOutputStream(parcelFileDescriptor.fileDescriptor)
-                        val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-
-                        println("🌙 Launching read coroutine")
-                        vpnToServerCouroutineScope.launch {
-                            while(true)
-                            {
-                                // Leave loop if the socket is closed
-                                if (flowerConnection.connection.tcpConnection != null && flowerConnection.connection.tcpConnection!!.isClosed)
-                                {
-                                    break
-                                }
-                                else if (flowerConnection.connection.udpConnection != null && flowerConnection.connection.udpConnection!!.isClosed)
-                                {
-                                    break
-                                }
-                                else
-                                {
-                                    serverToVPN(outputStream, flowerConnection)
-                                }
-                            }
-                        }
-
-                        println("🌙 Launching write coroutine")
-                        serverToVPNCoroutineScope.launch {
-                            while (true)
-                            {
-                                // Leave the loop if the socket is closed
-                                if (flowerConnection.connection.tcpConnection != null && flowerConnection.connection.tcpConnection!!.isClosed)
-                                {
-                                    break
-                                }
-                                else if (flowerConnection.connection.udpConnection != null && flowerConnection.connection.udpConnection!!.isClosed)
-                                {
-                                    break
-                                }
-                                else
-                                {
-                                    vpnToServer(inputStream, flowerConnection)
-                                }
-                            }
-                        }
-
-                        println("🌙 Launching UDP Test")
-                        udpCoroutineScope.launch {
-                            udpTest()
-                        }
-
-                        println("🌙 Launching TCP Test")
-                        tcpCouroutineScope.launch {
-                            tcpTest()
-                        }
-                    }
+                    println("🌙 MBAKVpnService: Failed to prepare the builder. Closing the connection.")
+                    flowerConnection.connection.close()
+                    return@thread
                 }
-                else ->
-                {
-                    println("🌙 Our first response from the server was not an ipv4 assignment.")
+
+                val outputStream = FileOutputStream(parcelFileDescriptor.fileDescriptor)
+                val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
+
+                println("🌙 MBAKVpnService: starting ServerToVPN loop")
+                thread(start = true) {
+                    runServerToVPN(flowerConnection, inputStream, outputStream)
                 }
+
+                val networkTests = NetworkTests()
+
+                println("🌙 MBAKVpnService: Launching UDP Test")
+                thread(start = true) {
+                    // FIXME: Use a valid server IP and port
+                    networkTests.udpTest("159.203.158.90", 8181)
+                }
+
+//                                    println("🌙 Launching TCP Test")
+//                                    launch {
+//                                        networkTests.tcpTest("", 8282)
+//                                    }
+
+                println("🌙 MBAKVpnService: starting VPNtoServer loop")
+                runVPNtoServer(flowerConnection, inputStream, outputStream)
             }
         }
         catch (error: Exception)
         {
-            println("🌙 Error creating socket: " + error.message)
-        }
-
-//        externalScope.launch(defaultDispatcher)
-//        {
-//
-//        } .join()
-    }
-
-    fun udpTest()
-    {
-        udpCoroutineScope.async(Dispatchers.IO)
-        {
-            val transmissionConnection = TransmissionConnection(transportServerIP, transportServerPort, ConnectionType.UDP, null)
-            transmissionConnection.write("Catbus is UDP tops!")
-
-            val result = transmissionConnection.readMaxSize(10)
-
-            if (result == null)
-            {
-                println("🌙 UDP test tried to read, but got no response")
-            }
-            else
-            {
-                val resultString = String(result)
-                println("🌙 UDP test got a response: " + resultString)
-            }
+            println("🌙 MBAKVpnService: Error using ip $transportServerIP and port $transportServerPort. Error message: " + error.message)
         }
     }
 
-    fun tcpTest()
+    fun handshake(flowerConnection: FlowerConnection): ParcelFileDescriptor?
     {
-        tcpCouroutineScope.async(Dispatchers.IO)
+        val messageData = IPRequestV4().data
+        val ipRequest = Message(messageData)
+
+        println("\n🌙 MBAKVpnService.handshake: is attempting to write a 🌻 message...")
+        flowerConnection.writeMessage(ipRequest)
+
+        println("\n🌙 MBAKVpnService.handshake: is attempting to read a 🌻 message...")
+        val flowerResponse = flowerConnection.readMessage()
+
+        if (flowerResponse == null)
         {
-            val transmissionConnection = TransmissionConnection(transportServerIP, 7777, ConnectionType.TCP, null)
-            transmissionConnection.write("Catbus is TCP tops!")
-
-            val result = transmissionConnection.readMaxSize(10)
-
-            if (result == null)
+            println("🌙 MBAKVpnService: Received a null response from our call to readMessage.")
+            return null
+        }
+        else
+        {
+            when(flowerResponse.messageType)
             {
-                println("🌙 TCP test tried to read, but got no response")
+                MessageType.IPAssignV4Type ->
+                {
+                    println("\n🌙 MBAKVpnService.handshake: Got a 🌻 IPV4 Assignment!!")
+                    val messageContent = flowerResponse.content as IPAssignV4
+                    val ipv4AssignmentString = messageContent.inet4Address.hostAddress
+
+                    if (ipv4AssignmentString == null)
+                    {
+                        println("🌙 MBAKVpnService.handshake: Failed to get the ipv4Assignment String")
+                        return null
+                    }
+                    else
+                    {
+                        println("🌙 MBAKVpnService.handshake: ipv4AssignmentString - $ipv4AssignmentString")
+                        return prepareBuilder(ipv4AssignmentString)
+                    }
+                }
+                else ->
+                {
+                    println("🌙 MBAKVpnService.handshake: Our first response from the server was not an ipv4 assignment.")
+                    return null
+                }
+            }
+        }
+    }
+
+    fun runVPNtoServer(flowerConnection: FlowerConnection, inputStream: FileInputStream, outputStream: FileOutputStream)
+    {
+        while (true)
+        {
+            // Leave the loop if the socket is closed
+            if (flowerConnection.connection.tcpConnection != null && flowerConnection.connection.tcpConnection!!.isClosed)
+            {
+                break
+            }
+            else if (flowerConnection.connection.udpConnection != null && flowerConnection.connection.udpConnection!!.isClosed)
+            {
+                break
             }
             else
             {
-                val resultString = String(result)
-                println("🌙 TCP test got a response: " + resultString)
+                try
+                {
+                    vpnToServer(inputStream, flowerConnection)
+                }
+                catch (vpnToServerError: Exception)
+                {
+                    println("🌙 MBAKVpnService.runVPNtoServer: Error: $vpnToServerError")
+                    flowerConnection.connection.close()
+                    outputStream.close()
+                    inputStream.close()
+                    break
+                }
             }
         }
     }
 
     fun vpnToServer(inputStream: FileInputStream, connection: FlowerConnection)
     {
-        vpnToServerCouroutineScope.async(Dispatchers.IO)
-        {
-            val bytesReceived = inputStream.readBytes()
+        try {
+            var readBuffer = ByteArray(2048)
+            val numberOfBytesReceived = inputStream.read(readBuffer)
+            readBuffer = readBuffer.dropLast(readBuffer.size - numberOfBytesReceived).toByteArray()
 
-            if (bytesReceived.isEmpty())
+            if (numberOfBytesReceived < 1)
             {
-                return@async
+                return
             }
             else
             {
-                val messageContent = IPDataV4(bytesReceived)
+                println("🌖 MoonbounceAndroid.vpnToServer: inputStream.readBytes() received ${numberOfBytesReceived} bytes")
+                val messageContent = IPDataV4(readBuffer)
                 val message = Message(messageContent.data)
-                connection.writeMessage(message)
+
+                try
+                {
+                    println("🌖 MoonbounceAndroid.vpnToServer: calling connection.writeMessage()")
+                    connection.writeMessage(message)
+                    println("🌖 MoonbounceAndroid.vpnToServer: returned from connection.writeMessage()")
+                }
+                catch (vpnToServerWriteError: Exception)
+                {
+                    println("MoonbounceAndroid.vpnToServer: vpnToServerWriteError")
+                    throw vpnToServerWriteError
+                }
+            }
+        }
+        catch (vpnToServerReadError: Exception)
+        {
+            println("MoonbounceAndroid.vpnToServer: vpnToServerReadError")
+            throw vpnToServerReadError
+        }
+    }
+
+    fun runServerToVPN(flowerConnection: FlowerConnection, inputStream: FileInputStream, outputStream: FileOutputStream)
+    {
+        while(true)
+        {
+            // Leave loop if the socket is closed
+            if (flowerConnection.connection.tcpConnection != null && flowerConnection.connection.tcpConnection!!.isClosed)
+            {
+                break
+            }
+            else if (flowerConnection.connection.udpConnection != null && flowerConnection.connection.udpConnection!!.isClosed)
+            {
+                break
+            }
+            else
+            {
+                try
+                {
+                    serverToVPN(outputStream, flowerConnection)
+                }
+                catch (serverToVPNError: Exception)
+                {
+                    println("MoonbounceAndroid.serverToVPN Error: $serverToVPNError")
+                    flowerConnection.connection.close()
+                    outputStream.close()
+                    inputStream.close()
+                    break
+                }
             }
         }
     }
 
     fun serverToVPN(outputStream: FileOutputStream, connection: FlowerConnection)
     {
-        serverToVPNCoroutineScope.async(Dispatchers.IO)
-        {
-            val messageReceived = connection.readMessage()
+        val messageReceived = connection.readMessage()
 
+        if (messageReceived == null)
+        {
+            println("MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
+            outputStream.close()
+            connection.connection.close()
+            return
+        }
+        else
+        {
             when(messageReceived.messageType)
             {
                 MessageType.IPDataV4Type ->
                 {
                     val messageContent = messageReceived.content as IPDataV4
                     val messageData = messageContent.bytes
-
+                    println("MoonbounceAndroid.serverToVPN: writing ${messageData.size} bytes to outputStream.")
                     outputStream.write(messageData)
                 }
 
-                else -> {
-                    return@async
+                else ->
+                {
+                    println("Received an unsupported Flower message type: ${messageReceived.messageType}")
+                    return
                 }
             }
         }
-    }
-
-    override fun onDestroy()
-    {
-        // TODO Auto-generated method stub
-//        if (mThread != null) {
-//            mThread!!.interrupt()
-//        }
-        super.onDestroy()
     }
 
     fun prepareBuilder(ipv4AssignmentString: String): ParcelFileDescriptor?
@@ -278,6 +269,51 @@ class MBAKVpnService: VpnService()
             .establish() // Call VpnService.Builder.establish() so that the system establishes the local TUN interface and begins routing traffic through the interface.
 
         println("🌙 finished setting up the VPNService builder")
+
         return parcelFileDescriptor
+    }
+
+    fun getConnectInfoFromIntent(intent: Intent?): Boolean
+    {
+        val maybeIP: String?
+        val maybePort: Int
+
+        if (intent != null)
+        {
+            maybeIP = intent.getStringExtra(SERVER_IP)
+            maybePort = intent.getIntExtra(SERVER_PORT, 0)
+        }
+        else
+        {
+            println("🌙 MBAKVpnService: MBAKVpnService intent was null")
+            return false
+        }
+
+        if (maybeIP != null)
+        {
+            transportServerIP = maybeIP
+        }
+        else
+        {
+            println("🌙 MBAKVpnService: Tried to connect without a valid IP")
+            return false
+        }
+
+        if (maybePort != 0)
+        {
+            transportServerPort = maybePort
+        }
+        else
+        {
+            println("🌙 MBAKVpnService: Tried to connect without a valid port")
+            return false
+        }
+
+        return true
+    }
+
+    override fun onDestroy()
+    {
+        super.onDestroy()
     }
 }
