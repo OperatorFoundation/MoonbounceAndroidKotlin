@@ -14,8 +14,9 @@ import org.operatorfoundation.moonbouncevpnservice.*
 
 class MainActivity : AppCompatActivity()
 {
-    var ipAddress = ""
-    var serverPort = 0
+    val networkTests = NetworkTests()
+    var ipAddress = "0.0.0.0"
+    var serverPort = 1234
     lateinit var resultText: TextView
 
     // BroadcastReceiver to show VPN status updates
@@ -73,6 +74,8 @@ class MainActivity : AppCompatActivity()
         // TODO: Implement UI for testing TCP
         println("Test TCP Clicked.")
         resultText.text = "Test TCP Tapped."
+
+        networkTests.tcpTest(ipAddress, serverPort)
     }
 
     fun testUDPTapped()
@@ -80,6 +83,8 @@ class MainActivity : AppCompatActivity()
         // TODO: Implement UI for testing UDP
         println("Test UDP Clicked.")
         resultText.text = "Test UDP Tapped."
+
+        networkTests.udpTest(ipAddress, serverPort)
     }
 
     fun connectTapped()
