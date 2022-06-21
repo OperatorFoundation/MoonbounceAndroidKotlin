@@ -15,7 +15,6 @@ val SERVER_IP = "ServerIP"
 class MBAKVpnService: VpnService()
 {
     private var builder: Builder = Builder()
-    val networkTests = NetworkTests()
     var transportServerIP = ""
     var transportServerPort = 1234
     val dnsServerIP = "8.8.8.8"
@@ -176,7 +175,7 @@ class MBAKVpnService: VpnService()
                 }
                 catch (vpnToServerWriteError: Exception)
                 {
-                    println("MoonbounceAndroid.vpnToServer: vpnToServerWriteError")
+                    println("\uD83C\uDF16 MoonbounceAndroid.vpnToServer: vpnToServerWriteError")
                     throw vpnToServerWriteError
                 }
             }
