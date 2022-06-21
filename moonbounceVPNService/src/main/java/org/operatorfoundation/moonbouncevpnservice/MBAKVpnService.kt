@@ -56,23 +56,16 @@ class MBAKVpnService: VpnService()
                 val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
 
                 println("🌙 MBAKVpnService: starting ServerToVPN loop")
-                thread(start = true) {
+                thread(start = true)
+                {
                     runServerToVPN(flowerConnection, inputStream, outputStream)
                 }
 
-                println("🌙 MBAKVpnService: Launching UDP Test")
-                thread(start = true) {
-                    // FIXME: Use a valid server IP and port
-                    networkTests.udpTest("159.203.158.90", 8181)
-                }
-
-//                                    println("🌙 Launching TCP Test")
-//                                    launch {
-//                                        networkTests.tcpTest("", 8282)
-//                                    }
-
                 println("🌙 MBAKVpnService: starting VPNtoServer loop")
-                runVPNtoServer(flowerConnection, inputStream, outputStream)
+                thread(start = true)
+                {
+                    runVPNtoServer(flowerConnection, inputStream, outputStream)
+                }
             }
         }
         catch (error: Exception)
@@ -239,13 +232,15 @@ class MBAKVpnService: VpnService()
         }
         else
         {
+            println("🌖 MoonbounceAndroid.serverToVPN: inputStream.readBytes() received ${messageReceived.data.size} bytes")
+
             when(messageReceived.messageType)
             {
                 MessageType.IPDataV4Type ->
                 {
                     val messageContent = messageReceived.content as IPDataV4
                     val messageData = messageContent.bytes
-                    println("MoonbounceAndroid.serverToVPN: writing ${messageData.size} bytes to outputStream.")
+                    println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: writing ${messageData.size} bytes to outputStream.")
                     outputStream.write(messageData)
                 }
 
