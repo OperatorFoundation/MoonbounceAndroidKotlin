@@ -24,10 +24,7 @@ class MBAKVpnService: VpnService()
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
         getConnectInfoFromIntent(intent)
-
-        thread(start = true) {
-            connect()
-        }
+        connect()
 
         return START_STICKY
     }

@@ -10,20 +10,23 @@ class NetworkTests
     {
         println("🌙 MBAKVpnService: Launching UDP Test")
 
-        val transmissionConnection =
-            TransmissionConnection(host, port, ConnectionType.UDP, null)
-        transmissionConnection.write("Catbus is UDP tops!")
-
-        val result = transmissionConnection.read(5)
-
-        if (result == null)
+        thread(start = true)
         {
-            println("🌙 NetworkTests: UDP test tried to read, but got no response")
-        }
-        else
-        {
-            val resultString = String(result)
-            println("🌙 NetworkTests: UDP test got a response: " + resultString)
+            val transmissionConnection =
+                TransmissionConnection(host, port, ConnectionType.UDP, null)
+            transmissionConnection.write("Catbus is UDP tops!")
+
+            val result = transmissionConnection.read(22)
+
+            if (result == null)
+            {
+                println("🌙 NetworkTests: UDP test tried to read, but got no response")
+            }
+            else
+            {
+                val resultString = String(result)
+                println("🌙 NetworkTests: UDP test got a response: " + resultString)
+            }
         }
     }
 
@@ -31,19 +34,22 @@ class NetworkTests
     {
         println("🌙 Launching TCP Test")
 
-        val transmissionConnection = TransmissionConnection(host, port, ConnectionType.TCP, null)
-        transmissionConnection.write("Catbus is TCP tops!")
-
-        val result = transmissionConnection.read(5)
-
-        if (result == null)
+        thread(start = true)
         {
-            println("🌙 TCP test tried to read, but got no response")
-        }
-        else
-        {
-            val resultString = String(result)
-            println("🌙 NetworkTests: TCP test got a response: " + resultString)
+            val transmissionConnection = TransmissionConnection(host, port, ConnectionType.TCP, null)
+            transmissionConnection.write("Catbus is TCP tops!")
+
+            val result = transmissionConnection.read(5)
+
+            if (result == null)
+            {
+                println("🌙 TCP test tried to read, but got no response")
+            }
+            else
+            {
+                val resultString = String(result)
+                println("🌙 NetworkTests: TCP test got a response: " + resultString)
+            }
         }
     }
 }

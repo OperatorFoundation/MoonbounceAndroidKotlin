@@ -14,7 +14,7 @@
         android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
         android:hint="Enter The Server IP Address "
-        android:inputType="phone"
+        android:digits="0123456789."
         android:minHeight="48dp"
         android:text=""
         android:textAlignment="center"
