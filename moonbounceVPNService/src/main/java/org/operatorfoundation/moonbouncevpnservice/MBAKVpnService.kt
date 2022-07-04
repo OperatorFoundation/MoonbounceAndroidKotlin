@@ -307,6 +307,11 @@ class MBAKVpnService: VpnService()
         return true
     }
 
+    fun stopVPN()
+    {
+        //
+    }
+
     override fun onDestroy()
     {
         super.onDestroy()
