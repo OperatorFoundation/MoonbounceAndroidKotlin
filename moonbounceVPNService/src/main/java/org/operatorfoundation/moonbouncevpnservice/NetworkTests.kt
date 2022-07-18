@@ -10,8 +10,7 @@ class NetworkTests
     {
         println("🌙 MBAKVpnService: Launching UDP Test")
 
-        thread(start = true)
-        {
+        thread(start = true) {
             val transmissionConnection =
                 TransmissionConnection(host, port, ConnectionType.UDP, null)
             transmissionConnection.write("Catbus is UDP tops!")
