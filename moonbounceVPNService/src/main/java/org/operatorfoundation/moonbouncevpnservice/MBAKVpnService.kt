@@ -7,6 +7,7 @@ import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
 import kotlin.concurrent.thread
 
 val SERVER_PORT = "ServerPort"
@@ -15,6 +16,10 @@ val SERVER_IP = "ServerIP"
 class MBAKVpnService: VpnService()
 {
     private var builder: Builder = Builder()
+    private var parcelFileDescriptor: ParcelFileDescriptor? = null
+    private var flowerConnection: FlowerConnection? = null
+    private var inputStream: FileInputStream? = null
+    private var outputStream: FileOutputStream? = null
     var transportServerIP = ""
     var transportServerPort = 1234
     val dnsServerIP = "8.8.8.8"
@@ -29,6 +34,14 @@ class MBAKVpnService: VpnService()
         return START_STICKY
     }
 
+    override fun onRevoke()
+    {
+        super.onRevoke()
+
+        // TODO: close the file descriptor and shut down the tunnel gracefully.
+        stopVPN()
+    }
+
     fun connect()
     {
         try
@@ -38,30 +51,33 @@ class MBAKVpnService: VpnService()
                 val transmissionConnection = TransmissionConnection(transportServerIP, transportServerPort, ConnectionType.TCP, null)
                 protect(transmissionConnection.tcpConnection!!)
 
-                val flowerConnection = FlowerConnection(transmissionConnection, null)
-                val parcelFileDescriptor = handshake(flowerConnection)
+                flowerConnection = FlowerConnection(transmissionConnection, null)
+                parcelFileDescriptor = handshake(flowerConnection!!)
 
                 if (parcelFileDescriptor == null)
                 {
                     println("🌙 MBAKVpnService: Failed to prepare the builder. Closing the connection.")
-                    flowerConnection.connection.close()
+                    stopVPN()
                     return@thread
                 }
-
-                val outputStream = FileOutputStream(parcelFileDescriptor.fileDescriptor)
-                val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-
-                println("🌙 MBAKVpnService: starting ServerToVPN loop")
-                thread(start = true)
+                else
                 {
-                    runServerToVPN(flowerConnection, inputStream, outputStream)
+                    outputStream = FileOutputStream(parcelFileDescriptor!!.fileDescriptor)
+                    inputStream = FileInputStream(parcelFileDescriptor!!.fileDescriptor)
+
+                    println("🌙 MBAKVpnService: starting ServerToVPN loop")
+                    thread(start = true)
+                    {
+                        runServerToVPN()
+                    }
+
+                    println("🌙 MBAKVpnService: starting VPNtoServer loop")
+                    thread(start = true)
+                    {
+                        runVPNtoServer()
+                    }
                 }
 
-                println("🌙 MBAKVpnService: starting VPNtoServer loop")
-                thread(start = true)
-                {
-                    runVPNtoServer(flowerConnection, inputStream, outputStream)
-                }
             }
         }
         catch (error: Exception)
@@ -116,42 +132,44 @@ class MBAKVpnService: VpnService()
         }
     }
 
-    fun runVPNtoServer(flowerConnection: FlowerConnection, inputStream: FileInputStream, outputStream: FileOutputStream)
+    fun runVPNtoServer()
     {
         while (true)
         {
             // Leave the loop if the socket is closed
-            if (flowerConnection.connection.tcpConnection != null && flowerConnection.connection.tcpConnection!!.isClosed)
+            if (flowerConnection?.connection?.tcpConnection != null && flowerConnection!!.connection.tcpConnection!!.isClosed)
             {
                 break
             }
-            else if (flowerConnection.connection.udpConnection != null && flowerConnection.connection.udpConnection!!.isClosed)
+            else if (flowerConnection?.connection?.udpConnection != null && flowerConnection!!.connection.udpConnection!!.isClosed)
             {
                 break
             }
-            else
+            else if (flowerConnection?.connection != null && inputStream != null)
             {
                 try
                 {
-                    vpnToServer(inputStream, flowerConnection)
+                    vpnToServer(inputStream!!, flowerConnection!!)
                 }
                 catch (vpnToServerError: Exception)
                 {
                     println("🌙 MBAKVpnService.runVPNtoServer: Error: $vpnToServerError")
-                    flowerConnection.connection.close()
-                    outputStream.close()
-                    inputStream.close()
+                    stopVPN()
                     break
                 }
+            }
+            else
+            {
+                break
             }
         }
     }
 
-    fun vpnToServer(inputStream: FileInputStream, connection: FlowerConnection)
+    fun vpnToServer(vpnInputStream: FileInputStream, connection: FlowerConnection)
     {
         try {
             var readBuffer = ByteArray(2048)
-            val numberOfBytesReceived = inputStream.read(readBuffer)
+            val numberOfBytesReceived = vpnInputStream.read(readBuffer)
             readBuffer = readBuffer.dropLast(readBuffer.size - numberOfBytesReceived).toByteArray()
 
             if (numberOfBytesReceived < 1)
@@ -184,46 +202,43 @@ class MBAKVpnService: VpnService()
         }
     }
 
-    fun runServerToVPN(flowerConnection: FlowerConnection, inputStream: FileInputStream, outputStream: FileOutputStream)
+    fun runServerToVPN()
     {
         while(true)
         {
             // Leave loop if the socket is closed
-            if (flowerConnection.connection.tcpConnection != null && flowerConnection.connection.tcpConnection!!.isClosed)
+            if (flowerConnection?.connection?.tcpConnection != null && flowerConnection!!.connection.tcpConnection!!.isClosed)
             {
                 break
             }
-            else if (flowerConnection.connection.udpConnection != null && flowerConnection.connection.udpConnection!!.isClosed)
+            else if (flowerConnection?.connection?.udpConnection != null && flowerConnection!!.connection.udpConnection!!.isClosed)
             {
                 break
             }
-            else
+            else if (flowerConnection?.connection != null && outputStream != null)
             {
                 try
                 {
-                    serverToVPN(outputStream, flowerConnection)
+                    serverToVPN(outputStream!!, flowerConnection!!)
                 }
                 catch (serverToVPNError: Exception)
                 {
                     println("MoonbounceAndroid.serverToVPN Error: $serverToVPNError")
-                    flowerConnection.connection.close()
-                    outputStream.close()
-                    inputStream.close()
+                    stopVPN()
                     break
                 }
             }
         }
     }
 
-    fun serverToVPN(outputStream: FileOutputStream, connection: FlowerConnection)
+    fun serverToVPN(vpnOutputStream: FileOutputStream, connection: FlowerConnection)
     {
         val messageReceived = connection.readMessage()
 
         if (messageReceived == null)
         {
             println("MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
-            outputStream.close()
-            connection.connection.close()
+            stopVPN()
             return
         }
         else
@@ -237,7 +252,7 @@ class MBAKVpnService: VpnService()
                     val messageContent = messageReceived.content as IPDataV4
                     val messageData = messageContent.bytes
                     println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: writing ${messageData.size} bytes to outputStream.")
-                    outputStream.write(messageData)
+                    vpnOutputStream.write(messageData)
                 }
 
                 else ->
@@ -306,7 +321,10 @@ class MBAKVpnService: VpnService()
 
     fun stopVPN()
     {
-        //
+        parcelFileDescriptor?.close()
+        flowerConnection?.connection?.close()
+        outputStream?.close()
+        inputStream?.close()
     }
 
     override fun onDestroy()
