@@ -325,6 +325,8 @@ class MBAKVpnService: VpnService()
         flowerConnection?.connection?.close()
         outputStream?.close()
         inputStream?.close()
+
+        println("Stopping VPN.....")
     }
 
     override fun onDestroy()

@@ -15,6 +15,7 @@ import org.operatorfoundation.moonbouncevpnservice.*
 class MainActivity : AppCompatActivity()
 {
     val networkTests = NetworkTests()
+    val MBAKVpnService = MBAKVpnService()
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var echoPort = 2233
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity()
         val connectButton = findViewById<Button>(R.id.connect_button)
         val testTCPButton = findViewById<Button>(R.id.test_TCP)
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
+        val stopVPNButton = findViewById<Button>(R.id.stopVPN_button)
 
         connectButton.setOnClickListener {
             connectTapped()
@@ -68,6 +70,17 @@ class MainActivity : AppCompatActivity()
             testUDPTapped()
         }
 
+        stopVPNButton.setOnClickListener {
+            stopVPNButtonTapped()
+        }
+
+    }
+
+    private fun stopVPNButtonTapped() {
+        println("Stop VPN Clicked.")
+        resultText.text = "Stop VPN Tapped."
+
+        MBAKVpnService.stopVPN()
     }
 
     fun testTCPClicked()
