@@ -67,17 +67,28 @@ class MBAKVpnService: VpnService()
                     outputStream = FileOutputStream(parcelFileDescriptor!!.fileDescriptor)
                     inputStream = FileInputStream(parcelFileDescriptor!!.fileDescriptor)
 
-                    println("🌙 MBAKVpnService: starting ServerToVPN loop")
+                    println(">>>>>>>>>>>>>>> UDP test before ServerToVPN")
+                    //NetworkTests().udpTest(transportServerIP, 2233)
+                    println(">>>>>>>>>>>>>>> UDP test end")
+
+                    println("ð MBAKVpnService: starting ServerToVPN loop")
                     thread(start = true)
                     {
                         runServerToVPN()
                     }
+                    println(">>>>>>>>>>>>>>> UDP test before VPNtoServer")
+                    //NetworkTests().udpTest(transportServerIP, 2233)
+                    println(">>>>>>>>>>>>>>> UDP test end")
 
                     println("🌙 MBAKVpnService: starting VPNtoServer loop")
                     thread(start = true)
                     {
                         runVPNtoServer()
                     }
+
+                    println(">>>>>>>>>>>>>>> UDP test start")
+                    NetworkTests().udpTest(transportServerIP, 2233)
+                    println(">>>>>>>>>>>>>>> UDP test end")
                 }
 
             }
@@ -136,6 +147,8 @@ class MBAKVpnService: VpnService()
 
     fun runVPNtoServer()
     {
+
+
         while (true)
         {
             // Leave the loop if the socket is closed
