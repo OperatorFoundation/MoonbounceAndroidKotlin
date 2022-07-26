@@ -15,7 +15,6 @@ import org.operatorfoundation.moonbouncevpnservice.*
 class MainActivity : AppCompatActivity()
 {
     val networkTests = NetworkTests()
-    val MBAKVpnService = MBAKVpnService()
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var echoPort = 2233
@@ -80,7 +79,8 @@ class MainActivity : AppCompatActivity()
         println("Stop VPN Clicked.")
         resultText.text = "Stop VPN Tapped."
 
-        MBAKVpnService.stopVPN()
+        val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
+        stopService(vpnServiceIntent)
     }
 
     fun testTCPClicked()
@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity()
                 else // The user has already given permission, and the VPN Service is already prepared
                 {
                     // Start the VPN Service
-                    val vpnServiceIntent = Intent(this, org.operatorfoundation.moonbouncevpnservice.MBAKVpnService::class.java)
+                    val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
                     vpnServiceIntent.putExtra(SERVER_IP, ipAddress)
                     vpnServiceIntent.putExtra(SERVER_PORT, serverPort)
                     startService(vpnServiceIntent)

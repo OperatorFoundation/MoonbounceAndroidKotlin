@@ -8,6 +8,7 @@ import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.net.DatagramSocket
 import kotlin.concurrent.thread
 
 val SERVER_PORT = "ServerPort"
@@ -36,6 +37,7 @@ class MBAKVpnService: VpnService()
 
     override fun onRevoke()
     {
+        println("✋✋✋ onRevoke() called...")
         super.onRevoke()
 
         // TODO: close the file descriptor and shut down the tunnel gracefully.
@@ -321,16 +323,18 @@ class MBAKVpnService: VpnService()
 
     fun stopVPN()
     {
+        println("Stopping VPN.....")
         parcelFileDescriptor?.close()
         flowerConnection?.connection?.close()
         outputStream?.close()
         inputStream?.close()
 
-        println("Stopping VPN.....")
+        stopSelf()
     }
 
     override fun onDestroy()
     {
+        println("✋✋✋ onDestroy called...")
         super.onDestroy()
     }
 }
