@@ -53,7 +53,7 @@ class MBAKVpnService: VpnService()
                 val transmissionConnection = TransmissionConnection(transportServerIP, transportServerPort, ConnectionType.TCP, null)
                 protect(transmissionConnection.tcpConnection!!)
 
-                flowerConnection = FlowerConnection(transmissionConnection, null)
+                flowerConnection = FlowerConnection(transmissionConnection, null, true, true)
                 parcelFileDescriptor = handshake(flowerConnection!!)
 
                 if (parcelFileDescriptor == null)
@@ -67,18 +67,11 @@ class MBAKVpnService: VpnService()
                     outputStream = FileOutputStream(parcelFileDescriptor!!.fileDescriptor)
                     inputStream = FileInputStream(parcelFileDescriptor!!.fileDescriptor)
 
-                    println(">>>>>>>>>>>>>>> UDP test before ServerToVPN")
-                    //NetworkTests().udpTest(transportServerIP, 2233)
-                    println(">>>>>>>>>>>>>>> UDP test end")
-
                     println("ð MBAKVpnService: starting ServerToVPN loop")
                     thread(start = true)
                     {
                         runServerToVPN()
                     }
-                    println(">>>>>>>>>>>>>>> UDP test before VPNtoServer")
-                    //NetworkTests().udpTest(transportServerIP, 2233)
-                    println(">>>>>>>>>>>>>>> UDP test end")
 
                     println("🌙 MBAKVpnService: starting VPNtoServer loop")
                     thread(start = true)
