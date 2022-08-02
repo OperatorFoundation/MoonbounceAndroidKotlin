@@ -79,9 +79,9 @@ class MBAKVpnService: VpnService()
                         runVPNtoServer()
                     }
 
-                    println(">>>>>>>>>>>>>>> UDP test start")
-                    NetworkTests().udpTest(transportServerIP, 2233)
-                    println(">>>>>>>>>>>>>>> UDP test end")
+//                    println(">>>>>>>>>>>>>>> UDP test start")
+//                    NetworkTests().udpTest(transportServerIP, 2233)
+//                    println(">>>>>>>>>>>>>>> UDP test end")
                 }
 
             }

@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.VpnService
 import android.widget.Button
 import android.os.Bundle
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,6 +17,7 @@ import org.operatorfoundation.moonbouncevpnservice.*
 class MainActivity : AppCompatActivity()
 {
     val networkTests = NetworkTests()
+    var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var echoPort = 2233
@@ -29,9 +32,12 @@ class MainActivity : AppCompatActivity()
         if (result.resultCode == Activity.RESULT_OK) // User has granted the needed permissions
         {
             // Start the VPN Service
-            val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-            vpnServiceIntent.putExtra(SERVER_IP, ipAddress)
-            vpnServiceIntent.putExtra(SERVER_PORT, serverPort)
+            if (vpnServiceIntent == null)
+            {
+                vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
+            }
+            vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
+            vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
             startService(vpnServiceIntent)
 
             resultText.text ="Starting the VPN service."
@@ -49,6 +55,11 @@ class MainActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        if (vpnServiceIntent == null)
+        {
+            vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
+        }
 
         resultText = findViewById<TextView>(R.id.resultText)
 
@@ -75,11 +86,10 @@ class MainActivity : AppCompatActivity()
 
     }
 
-    private fun stopVPNButtonTapped() {
+    fun stopVPNButtonTapped() {
         println("Stop VPN Clicked.")
         resultText.text = "Stop VPN Tapped."
 
-        val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
         stopService(vpnServiceIntent)
     }
 
@@ -131,10 +141,13 @@ class MainActivity : AppCompatActivity()
                 }
                 else // The user has already given permission, and the VPN Service is already prepared
                 {
+                    if (vpnServiceIntent == null)
+                    {
+                        vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
+                    }
                     // Start the VPN Service
-                    val vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-                    vpnServiceIntent.putExtra(SERVER_IP, ipAddress)
-                    vpnServiceIntent.putExtra(SERVER_PORT, serverPort)
+                    vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
+                    vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
                     startService(vpnServiceIntent)
                 }
             }
