@@ -21,11 +21,12 @@ class MBAKVpnService: VpnService()
     private var flowerConnection: FlowerConnection? = null
     private var inputStream: FileInputStream? = null
     private var outputStream: FileOutputStream? = null
+    private val dnsServerIP = "8.8.8.8"
+    private val route = "0.0.0.0"
+    private val subnetMask = 8
     var transportServerIP = ""
     var transportServerPort = 1234
-    val dnsServerIP = "8.8.8.8"
-    val route = "0.0.0.0"
-    val subnetMask = 8
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
@@ -33,15 +34,6 @@ class MBAKVpnService: VpnService()
         connect()
 
         return START_STICKY
-    }
-
-    override fun onRevoke()
-    {
-        println("✋✋✋ onRevoke() called...")
-        super.onRevoke()
-
-        // TODO: close the file descriptor and shut down the tunnel gracefully.
-        stopVPN()
     }
 
     fun connect()
@@ -329,7 +321,7 @@ class MBAKVpnService: VpnService()
 
     fun stopVPN()
     {
-        println("Stopping VPN.....")
+        println("✋ Stopping VPN  ✋")
         parcelFileDescriptor?.close()
         flowerConnection?.connection?.close()
         outputStream?.close()
@@ -342,5 +334,7 @@ class MBAKVpnService: VpnService()
     {
         println("✋✋✋ onDestroy called...")
         super.onDestroy()
+
+        stopVPN()
     }
 }
