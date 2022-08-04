@@ -7,8 +7,6 @@ import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.InputStream
-import java.net.DatagramSocket
 import kotlin.concurrent.thread
 
 val SERVER_PORT = "ServerPort"
@@ -50,7 +48,12 @@ class MBAKVpnService: VpnService()
         {
             thread(start = true)
             {
+                // TODO: Crashes if connection is refused (for instance if the IP is incorrect)
                 val transmissionConnection = TransmissionConnection(transportServerIP, transportServerPort, ConnectionType.TCP, null)
+
+                // Data sent through this socket will go directly to the underlying network, so its traffic will not be forwarded through the VPN
+                // A VPN tunnel should protect itself if its destination is covered by VPN routes.
+                // Otherwise its outgoing packets will be sent back to the VPN interface and cause an infinite loop.
                 protect(transmissionConnection.tcpConnection!!)
 
                 flowerConnection = FlowerConnection(transmissionConnection, null, true, true)
