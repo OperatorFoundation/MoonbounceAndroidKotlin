@@ -325,12 +325,16 @@ class MBAKVpnService: VpnService()
     fun stopVPN()
     {
         println("✋ Stopping VPN  ✋")
+        cleanUp()
+        stopSelf()
+    }
+
+    fun cleanUp()
+    {
         parcelFileDescriptor?.close()
         flowerConnection?.connection?.close()
         outputStream?.close()
         inputStream?.close()
-
-        stopSelf()
     }
 
     override fun onDestroy()
@@ -338,6 +342,6 @@ class MBAKVpnService: VpnService()
         println("✋✋✋ onDestroy called...")
         super.onDestroy()
 
-        stopVPN()
+        cleanUp()
     }
 }
