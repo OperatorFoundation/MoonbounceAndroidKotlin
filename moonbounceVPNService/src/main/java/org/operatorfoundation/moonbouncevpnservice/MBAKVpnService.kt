@@ -339,8 +339,16 @@ class MBAKVpnService: VpnService()
 
     override fun onDestroy()
     {
-        println("✋✋✋ onDestroy called...")
+        println("✋ onDestroy called ✋")
         super.onDestroy()
+
+        cleanUp()
+    }
+
+    override fun onRevoke()
+    {
+        println("✋ onRevoke called ✋")
+        super.onRevoke()
 
         cleanUp()
     }
