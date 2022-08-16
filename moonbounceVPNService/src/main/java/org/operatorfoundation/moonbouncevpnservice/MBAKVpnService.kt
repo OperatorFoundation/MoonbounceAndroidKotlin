@@ -2,7 +2,9 @@ package org.operatorfoundation.moonbouncevpnservice
 
 import android.content.Intent
 import android.net.VpnService
+import android.os.Build
 import android.os.ParcelFileDescriptor
+import androidx.annotation.RequiresApi
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
@@ -26,6 +28,7 @@ class MBAKVpnService: VpnService()
     var transportServerPort = 1234
 
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
         getConnectInfoFromIntent(intent)
@@ -34,6 +37,7 @@ class MBAKVpnService: VpnService()
         return START_STICKY
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun connect()
     {
         try
@@ -87,6 +91,7 @@ class MBAKVpnService: VpnService()
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun handshake(flowerConnection: FlowerConnection): ParcelFileDescriptor?
     {
         val messageData = IPRequestV4().data
@@ -267,6 +272,7 @@ class MBAKVpnService: VpnService()
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun prepareBuilder(ipv4AssignmentString: String): ParcelFileDescriptor?
     {
         // Create a local TUN interface using predetermined addresses.
@@ -276,6 +282,7 @@ class MBAKVpnService: VpnService()
             .addAddress(ipv4AssignmentString, subnetMask) // Local IP Assigned by server on handshake
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
+            .addDisallowedApplication("com.google.android.youtube")
             .establish() // Call VpnService.Builder.establish() so that the system establishes the local TUN interface and begins routing traffic through the interface.
 
         println("🌙 finished setting up the VPNService builder")
