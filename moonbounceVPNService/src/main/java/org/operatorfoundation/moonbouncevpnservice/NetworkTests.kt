@@ -13,7 +13,7 @@ class NetworkTests
         thread(start = true) {
             val transmissionConnection =
                 TransmissionConnection(host, port, ConnectionType.UDP, null)
-            transmissionConnection.write("Catbus is UDP tops!")
+            transmissionConnection.write("ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ")
 
             val result = transmissionConnection.read(22)
 
@@ -36,7 +36,7 @@ class NetworkTests
         thread(start = true)
         {
             val transmissionConnection = TransmissionConnection(host, port, ConnectionType.TCP, null)
-            transmissionConnection.write("Catbus is TCP tops!")
+            transmissionConnection.write("ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ")
 
             val result = transmissionConnection.read(5)
 

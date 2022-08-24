@@ -93,6 +93,13 @@ class MainActivity : AppCompatActivity()
         stopService(vpnServiceIntent)
     }
 
+    override fun stopService(name: Intent?): Boolean
+    {
+        println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
+
+        return super.stopService(name)
+    }
+
     fun testTCPClicked()
     {
         // TODO: Implement UI for testing TCP
