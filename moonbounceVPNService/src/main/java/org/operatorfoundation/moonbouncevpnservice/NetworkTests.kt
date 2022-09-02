@@ -2,6 +2,7 @@ package org.operatorfoundation.moonbouncevpnservice
 
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
+import kotlin.NullPointerException
 import kotlin.concurrent.thread
 
 class NetworkTests
@@ -13,21 +14,29 @@ class NetworkTests
     {
         println("🌙 MBAKVpnService: Launching UDP Test")
 
-        thread(start = true) {
-            val transmissionConnection =
-                TransmissionConnection(host, port, ConnectionType.UDP, null)
-            transmissionConnection.write("ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ")
-
-            val result = transmissionConnection.read(22)
-
-            if (result == null)
+        thread(start = true)
+        {
+            try
             {
-                println("🌙 NetworkTests: UDP test tried to read, but got no response")
+                val transmissionConnection =
+                    TransmissionConnection(host, port, ConnectionType.UDP, null)
+                transmissionConnection.write("ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ")
+
+                val result = transmissionConnection.read(22)
+
+                if (result == null)
+                {
+                    println("🌙 NetworkTests: UDP test tried to read, but got no response")
+                }
+                else
+                {
+                    val resultString = String(result)
+                    println("🌙 NetworkTests: UDP test got a response: $resultString")
+                }
             }
-            else
+            catch(error: NullPointerException)
             {
-                val resultString = String(result)
-                println("🌙 NetworkTests: UDP test got a response: " + resultString)
+                println("🌙 NetworkTests: UDP test failed to make a connection. $error")
             }
         }
     }
@@ -38,19 +47,26 @@ class NetworkTests
 
         thread(start = true)
         {
-            val transmissionConnection = TransmissionConnection(host, port, ConnectionType.TCP, null)
-            transmissionConnection.write("ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ")
-
-            val result = transmissionConnection.read(5)
-
-            if (result == null)
+            try
             {
-                println("🌙 TCP test tried to read, but got no response")
+                val transmissionConnection = TransmissionConnection(host, port, ConnectionType.TCP, null)
+                transmissionConnection.write("ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ")
+
+                val result = transmissionConnection.read(5)
+
+                if (result == null)
+                {
+                    println("🌙 TCP test tried to read, but got no response")
+                }
+                else
+                {
+                    val resultString = String(result)
+                    println("🌙 NetworkTests: TCP test got a response: $resultString")
+                }
             }
-            else
+            catch(error: NullPointerException)
             {
-                val resultString = String(result)
-                println("🌙 NetworkTests: TCP test got a response: " + resultString)
+                println("🌙 NetworkTests: TCP test failed to make a connection. $error")
             }
         }
     }
