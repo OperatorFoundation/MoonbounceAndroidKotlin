@@ -63,6 +63,9 @@ class MainActivity : AppCompatActivity()
 
         resultText = findViewById<TextView>(R.id.resultText)
 
+        networkTests.host = ipAddress
+        networkTests.port = echoPort
+
         val connectButton = findViewById<Button>(R.id.connect_button)
         val testTCPButton = findViewById<Button>(R.id.test_TCP)
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
@@ -106,7 +109,7 @@ class MainActivity : AppCompatActivity()
         println("Test TCP Clicked.")
         resultText.text = "Test TCP Tapped."
 
-        networkTests.tcpTest(ipAddress, echoPort)
+       networkTests.tcpTest()
     }
 
     fun testUDPTapped()
@@ -115,7 +118,7 @@ class MainActivity : AppCompatActivity()
         println("Test UDP Clicked.")
         resultText.text = "Test UDP Tapped."
 
-        networkTests.udpTest(ipAddress, echoPort)
+        networkTests.udpTest()
     }
 
     fun connectTapped()
@@ -153,8 +156,15 @@ class MainActivity : AppCompatActivity()
                         vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
                     }
                     // Start the VPN Service
+                    // TODO: Implement exclude IP
+                    // TODO: This should come from the user.
+                    val disallowedApp = "com.googl"
+                    val excludeRoute = "acebook.co"
+
                     vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
                     vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
+                    vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
+                    vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
                     startService(vpnServiceIntent)
                 }
             }

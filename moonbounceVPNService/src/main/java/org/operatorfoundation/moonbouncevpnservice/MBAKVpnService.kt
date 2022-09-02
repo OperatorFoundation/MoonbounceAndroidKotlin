@@ -1,6 +1,8 @@
 package org.operatorfoundation.moonbouncevpnservice
 
 import android.content.Intent
+import android.net.InetAddresses
+import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -9,10 +11,14 @@ import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.Inet4Address
+import java.net.InetAddress
 import kotlin.concurrent.thread
 
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
+val DISALLOWED_APP = "DisallowedApp"
+const val EXCLUDE_ROUTE = "ExcludeRoute"
 
 class MBAKVpnService: VpnService()
 {
@@ -24,11 +30,12 @@ class MBAKVpnService: VpnService()
     private val dnsServerIP = "8.8.8.8"
     private val route = "0.0.0.0"
     private val subnetMask = 8
+    private var disallowedApp: String? = null
+    private var excludeRoute: String? = null
+    private var excludeIpAddress: String? = null
     var transportServerIP = ""
     var transportServerPort = 1234
 
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
         getConnectInfoFromIntent(intent)
@@ -37,7 +44,6 @@ class MBAKVpnService: VpnService()
         return START_STICKY
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun connect()
     {
         try
@@ -91,7 +97,6 @@ class MBAKVpnService: VpnService()
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun handshake(flowerConnection: FlowerConnection): ParcelFileDescriptor?
     {
         val messageData = IPRequestV4().data
@@ -126,6 +131,7 @@ class MBAKVpnService: VpnService()
                     else
                     {
                         println("🌙 MBAKVpnService.handshake: ipv4AssignmentString - $ipv4AssignmentString")
+                        // TODO: Go up the chain until I find a function that can access user input.
                         return prepareBuilder(ipv4AssignmentString)
                     }
                 }
@@ -272,18 +278,31 @@ class MBAKVpnService: VpnService()
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun prepareBuilder(ipv4AssignmentString: String): ParcelFileDescriptor?
     {
         // Create a local TUN interface using predetermined addresses.
         //  You typically use values returned from the VPN gateway during handshaking.
-        val parcelFileDescriptor = builder
+        builder
             .setSession("MoonbounceAndroidKotlinVpnService")
             .addAddress(ipv4AssignmentString, subnetMask) // Local IP Assigned by server on handshake
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
-            .addDisallowedApplication("com.google.android.youtube")
-            .establish() // Call VpnService.Builder.establish() so that the system establishes the local TUN interface and begins routing traffic through the interface.
+
+        // TODO: These need to be options the user decides.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            disallowedApp?.let { builder.addDisallowedApplication(it) }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            {
+                // TODO: Add excludeRoute(), requires TIRAMISU(API 33)
+                var excludeRouteInetAddress = InetAddress.getByName(excludeIpAddress)
+                val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
+                excludeRoute?.let { builder.excludeRoute(excludeRouteIpPrefix) }
+            }
+        }
+
+        val parcelFileDescriptor = builder.establish()
 
         println("🌙 finished setting up the VPNService builder")
 
@@ -299,6 +318,8 @@ class MBAKVpnService: VpnService()
         {
             maybeIP = intent.getStringExtra(SERVER_IP)
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
+            disallowedApp = intent.getStringExtra(DISALLOWED_APP)
+            excludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
         }
         else
         {

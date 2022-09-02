@@ -6,7 +6,10 @@ import kotlin.concurrent.thread
 
 class NetworkTests
 {
-    fun udpTest(host: String, port: Int)
+    var host: String = "0.0.0.0"
+    var port: Int = 1111
+
+    fun udpTest()
     {
         println("🌙 MBAKVpnService: Launching UDP Test")
 
@@ -29,7 +32,7 @@ class NetworkTests
         }
     }
 
-    fun tcpTest(host: String, port: Int)
+    fun tcpTest()
     {
         println("🌙 Launching TCP Test")
 
