@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity()
     var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
-    var echoPort = 2233
     val disallowedApp: String? = null
     val excludeRoute: String? = null
     lateinit var resultText: TextView
@@ -66,7 +65,6 @@ class MainActivity : AppCompatActivity()
         resultText = findViewById<TextView>(R.id.resultText)
 
         networkTests.host = ipAddress
-        networkTests.port = echoPort
 
         val connectButton = findViewById<Button>(R.id.connect_button)
         val testTCPButton = findViewById<Button>(R.id.test_TCP)

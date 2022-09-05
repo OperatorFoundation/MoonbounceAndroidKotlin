@@ -8,7 +8,8 @@ import kotlin.concurrent.thread
 class NetworkTests
 {
     var host: String = "0.0.0.0"
-    var port: Int = 2233
+    var udpEchoPort = 2233
+    var tcpEchoPort = 2234
 
     fun udpTest()
     {
@@ -19,7 +20,7 @@ class NetworkTests
             try
             {
                 val transmissionConnection =
-                    TransmissionConnection(host, port, ConnectionType.UDP, null)
+                    TransmissionConnection(host, udpEchoPort, ConnectionType.UDP, null)
                 transmissionConnection.write("ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ")
 
                 val result = transmissionConnection.read(22)
@@ -50,7 +51,7 @@ class NetworkTests
         {
             try
             {
-                val transmissionConnection = TransmissionConnection(host, port, ConnectionType.TCP, null)
+                val transmissionConnection = TransmissionConnection(host, tcpEchoPort, ConnectionType.TCP, null)
                 transmissionConnection.write("ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ")
 
                 val result = transmissionConnection.read(5)
