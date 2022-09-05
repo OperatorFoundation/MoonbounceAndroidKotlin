@@ -8,7 +8,7 @@ import kotlin.concurrent.thread
 class NetworkTests
 {
     var host: String = "0.0.0.0"
-    var port: Int = 1111
+    var port: Int = 2233
 
     fun udpTest()
     {
@@ -44,6 +44,7 @@ class NetworkTests
     fun tcpTest()
     {
         println("🌙 Launching TCP Test")
+//        println("host and port: $host / $port")
 
         thread(start = true)
         {

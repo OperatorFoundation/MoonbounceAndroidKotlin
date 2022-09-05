@@ -21,6 +21,8 @@ class MainActivity : AppCompatActivity()
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var echoPort = 2233
+    val disallowedApp: String? = null
+    val excludeRoute: String? = null
     lateinit var resultText: TextView
 
     // BroadcastReceiver to show VPN status updates
@@ -105,7 +107,6 @@ class MainActivity : AppCompatActivity()
 
     fun testTCPClicked()
     {
-        // TODO: Implement UI for testing TCP
         println("Test TCP Clicked.")
         resultText.text = "Test TCP Tapped."
 
@@ -114,7 +115,6 @@ class MainActivity : AppCompatActivity()
 
     fun testUDPTapped()
     {
-        // TODO: Implement UI for testing UDP
         println("Test UDP Clicked.")
         resultText.text = "Test UDP Tapped."
 
@@ -158,8 +158,6 @@ class MainActivity : AppCompatActivity()
                     // Start the VPN Service
                     // TODO: Implement exclude IP
                     // TODO: This should come from the user.
-                    val disallowedApp = "com.googl"
-                    val excludeRoute = "acebook.co"
 
                     vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
                     vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)

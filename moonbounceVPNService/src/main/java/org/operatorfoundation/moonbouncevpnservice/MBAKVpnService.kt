@@ -32,7 +32,6 @@ class MBAKVpnService: VpnService()
     private val subnetMask = 8
     private var disallowedApp: String? = null
     private var excludeRoute: String? = null
-    private var excludeIpAddress: String? = null
     var transportServerIP = ""
     var transportServerPort = 1234
 
@@ -291,14 +290,21 @@ class MBAKVpnService: VpnService()
         // TODO: These need to be options the user decides.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
-            disallowedApp?.let { builder.addDisallowedApplication(it) }
+            disallowedApp?.let {
+                println("Add disallowed application: $it")
+                builder.addDisallowedApplication(it)
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             {
-                // TODO: Add excludeRoute(), requires TIRAMISU(API 33)
-                var excludeRouteInetAddress = InetAddress.getByName(excludeIpAddress)
-                val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
-                excludeRoute?.let { builder.excludeRoute(excludeRouteIpPrefix) }
+                excludeRoute?.let {
+                    val excludeRouteInetAddress = InetAddress.getByName(it)
+                    println("Get the excludeRouteInetAddress: $excludeRouteInetAddress")
+                    val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
+                    println("Get the excludeRouteIpPrefix: $excludeRouteIpPrefix")
+
+                    builder.excludeRoute(excludeRouteIpPrefix)
+                }
             }
         }
 
