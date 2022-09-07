@@ -20,8 +20,8 @@ class MainActivity : AppCompatActivity()
     var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
-    val disallowedApp: String? = null
-    val excludeRoute: String? = null
+    var disallowedApp: String? = null
+    var excludeRoute: String? = null
     lateinit var resultText: TextView
 
     // BroadcastReceiver to show VPN status updates
@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity()
             }
             vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
             vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
+            vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
+            vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
             startService(vpnServiceIntent)
 
             resultText.text ="Starting the VPN service."
@@ -127,6 +129,12 @@ class MainActivity : AppCompatActivity()
 
         val portEditText = findViewById<EditText>(R.id.server_port)
         val serverPortString = portEditText.text.toString()
+
+        val disallowedAppEditText = findViewById<EditText>(R.id.disallowed_app)
+        disallowedApp = disallowedAppEditText.text.toString()
+
+        val excludeRouteEditText = findViewById<EditText>(R.id.exclude_route)
+        excludeRoute = excludeRouteEditText.text.toString()
 
         if (ipAddress.isEmpty() || ipAddress.isBlank())
         {
