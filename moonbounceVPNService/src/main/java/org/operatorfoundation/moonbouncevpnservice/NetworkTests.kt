@@ -45,14 +45,16 @@ class NetworkTests
     fun tcpTest()
     {
         println("🌙 Launching TCP Test")
-//        println("host and port: $host / $port")
+        println("host and port: $host: $tcpEchoPort")
 
         thread(start = true)
         {
             try
             {
                 val transmissionConnection = TransmissionConnection(host, tcpEchoPort, ConnectionType.TCP, null)
+                println("🌙 TCP test: Transmission Connection created.")
                 transmissionConnection.write("ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ")
+                println("🌙 TCP test: Wrote some data...")
 
                 val result = transmissionConnection.read(5)
 
@@ -66,7 +68,7 @@ class NetworkTests
                     println("🌙 NetworkTests: TCP test got a response: $resultString")
                 }
             }
-            catch(error: NullPointerException)
+            catch(error: Exception)
             {
                 println("🌙 NetworkTests: TCP test failed to make a connection. $error")
             }

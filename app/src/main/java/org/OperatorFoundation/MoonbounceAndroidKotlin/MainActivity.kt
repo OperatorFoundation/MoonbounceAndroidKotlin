@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity()
     var serverPort = 1234
     var disallowedApp: String? = null
     var excludeRoute: String? = null
+    lateinit var ipEditText: TextView
     lateinit var resultText: TextView
 
     // BroadcastReceiver to show VPN status updates
@@ -66,8 +67,7 @@ class MainActivity : AppCompatActivity()
 
         resultText = findViewById<TextView>(R.id.resultText)
 
-        networkTests.host = ipAddress
-
+        ipEditText = findViewById<EditText>(R.id.server_address)
         val connectButton = findViewById<Button>(R.id.connect_button)
         val testTCPButton = findViewById<Button>(R.id.test_TCP)
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
@@ -110,7 +110,9 @@ class MainActivity : AppCompatActivity()
         println("Test TCP Clicked.")
         resultText.text = "Test TCP Tapped."
 
-       networkTests.tcpTest()
+        ipAddress = ipEditText.text.toString()
+        networkTests.host = ipAddress
+        networkTests.tcpTest()
     }
 
     fun testUDPTapped()
@@ -118,13 +120,14 @@ class MainActivity : AppCompatActivity()
         println("Test UDP Clicked.")
         resultText.text = "Test UDP Tapped."
 
+        ipAddress = ipEditText.text.toString()
+        networkTests.host = ipAddress
         networkTests.udpTest()
     }
 
     fun connectTapped()
     {
         println("Connect tapped.")
-        val ipEditText = findViewById<EditText>(R.id.server_address)
         ipAddress = ipEditText.text.toString()
 
         val portEditText = findViewById<EditText>(R.id.server_port)
