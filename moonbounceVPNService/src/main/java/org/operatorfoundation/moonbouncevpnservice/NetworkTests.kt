@@ -35,7 +35,7 @@ class NetworkTests
                     println("🌙 NetworkTests: UDP test got a response: $resultString")
                 }
             }
-            catch(error: NullPointerException)
+            catch(error: Exception)
             {
                 println("🌙 NetworkTests: UDP test failed to make a connection. $error")
             }
