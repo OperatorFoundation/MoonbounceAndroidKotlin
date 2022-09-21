@@ -1,8 +1,11 @@
 package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.VpnService
 import android.widget.Button
 import android.os.Bundle
@@ -11,21 +14,22 @@ import android.view.View.OnClickListener;
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import org.OperatorFoundation.MoonbounceAndroidKotlin.StatusReceiver
 import java.lang.Exception
 import org.operatorfoundation.moonbouncevpnservice.*
 
 class MainActivity : AppCompatActivity()
 {
+    val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
     val networkTests = NetworkTests()
     var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var disallowedApp: String? = null
     var excludeRoute: String? = null
+    var receiver: BroadcastReceiver? = null
     lateinit var ipEditText: TextView
     lateinit var resultText: TextView
-
-    // BroadcastReceiver to show VPN status updates
 
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -73,6 +77,8 @@ class MainActivity : AppCompatActivity()
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
         val stopVPNButton = findViewById<Button>(R.id.stopVPN_button)
 
+        configureReceiver()
+
         connectButton.setOnClickListener {
             connectTapped()
         }
@@ -89,6 +95,14 @@ class MainActivity : AppCompatActivity()
             stopVPNButtonTapped()
         }
 
+    }
+
+    private fun configureReceiver()
+    {
+        val filter = IntentFilter()
+        filter.addAction(broadcastAction)
+        receiver = StatusReceiver()
+        registerReceiver(receiver, filter)
     }
 
     fun stopVPNButtonTapped() {
@@ -183,5 +197,11 @@ class MainActivity : AppCompatActivity()
                 return
             }
         }
+    }
+
+    override fun onDestroy()
+    {
+        super.onDestroy()
+        unregisterReceiver(receiver)
     }
 }

@@ -6,6 +6,7 @@ import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.view.View
 import androidx.annotation.RequiresApi
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
@@ -22,6 +23,8 @@ const val EXCLUDE_ROUTE = "ExcludeRoute"
 
 class MBAKVpnService: VpnService()
 {
+    val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
+    val isConnected = "moonbounceVpnConnected"
     private var builder: Builder = Builder()
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var flowerConnection: FlowerConnection? = null
@@ -45,12 +48,16 @@ class MBAKVpnService: VpnService()
 
     fun connect()
     {
-        try
+        thread(start = true)
         {
-            thread(start = true)
+            try
             {
-                // TODO: Crashes if connection is refused (for instance if the IP is incorrect)
-                val transmissionConnection = TransmissionConnection(transportServerIP, transportServerPort, ConnectionType.TCP, null)
+                val transmissionConnection = TransmissionConnection(
+                    transportServerIP,
+                    transportServerPort,
+                    ConnectionType.TCP,
+                    null
+                )
 
                 // Data sent through this socket will go directly to the underlying network, so its traffic will not be forwarded through the VPN
                 // A VPN tunnel should protect itself if its destination is covered by VPN routes.
@@ -64,6 +71,9 @@ class MBAKVpnService: VpnService()
                 {
                     println("🌙 MBAKVpnService: Failed to prepare the builder. Closing the connection.")
                     stopVPN()
+
+                    // Failed to create VPN tunnel
+                    broadcastStatus(false)
                     return@thread
                 }
                 else
@@ -83,16 +93,15 @@ class MBAKVpnService: VpnService()
                         runVPNtoServer()
                     }
 
-//                    println(">>>>>>>>>>>>>>> UDP test start")
-//                    NetworkTests().udpTest(transportServerIP, 2233)
-//                    println(">>>>>>>>>>>>>>> UDP test end")
+                    // We have successfully created a VPN tunnel
+                    broadcastStatus(true)
                 }
+            } catch (error: Exception) {
+                println("🌙 MBAKVpnService: Error using ip $transportServerIP and port $transportServerPort. Error message: " + error.message)
 
+                // Failed to create VPN tunnel
+                broadcastStatus(false)
             }
-        }
-        catch (error: Exception)
-        {
-            println("🌙 MBAKVpnService: Error using ip $transportServerIP and port $transportServerPort. Error message: " + error.message)
         }
     }
 
@@ -354,6 +363,14 @@ class MBAKVpnService: VpnService()
         }
 
         return true
+    }
+
+    fun broadcastStatus(connected: Boolean)
+    {
+        val intent = Intent()
+        intent.putExtra(isConnected, connected)
+        intent.action = broadcastAction
+        sendBroadcast(intent)
     }
 
     fun stopVPN()
