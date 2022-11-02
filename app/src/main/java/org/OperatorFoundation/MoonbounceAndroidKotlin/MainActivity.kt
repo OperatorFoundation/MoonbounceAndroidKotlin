@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.net.VpnService
 import android.widget.Button
 import android.os.Bundle
+import android.os.Handler
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText
@@ -46,6 +47,9 @@ class MainActivity : AppCompatActivity()
             vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
             vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
             vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
+
+            // TODO: https://developer.android.com/reference/android/content/Context#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
+//            bindService(vpnServiceIntent, 0)
             startService(vpnServiceIntent)
 
             resultText.text ="Starting the VPN service."
@@ -102,6 +106,8 @@ class MainActivity : AppCompatActivity()
         val filter = IntentFilter()
         filter.addAction(broadcastAction)
         receiver = StatusReceiver()
+
+        // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
         registerReceiver(receiver, filter)
     }
 
@@ -186,6 +192,10 @@ class MainActivity : AppCompatActivity()
                     vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
                     vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
                     vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
+
+                    // TODO: https://developer.android.com/reference/android/content/Context#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
+//            bindService(vpnServiceIntent, 0)
+
                     startService(vpnServiceIntent)
                 }
             }

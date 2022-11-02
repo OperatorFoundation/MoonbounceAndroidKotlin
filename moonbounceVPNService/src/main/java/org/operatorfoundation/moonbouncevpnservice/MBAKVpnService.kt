@@ -5,6 +5,7 @@ import android.net.InetAddresses
 import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
+import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.view.View
 import androidx.annotation.RequiresApi
@@ -44,6 +45,12 @@ class MBAKVpnService: VpnService()
         connect()
 
         return START_STICKY
+    }
+
+    override fun onBind(intent: Intent?): IBinder?
+    {
+        // TODO: https://developer.android.com/reference/android/app/Service#onBind(android.content.Intent)
+        return super.onBind(intent)
     }
 
     fun connect()
