@@ -2,33 +2,35 @@ package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.app.Activity
 import android.content.BroadcastReceiver
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
 import android.widget.Button
 import android.os.Bundle
-import android.os.Handler
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import org.OperatorFoundation.MoonbounceAndroidKotlin.StatusReceiver
+import org.OperatorFoundation.MoonbounceAndroidKotlin.TCPStatusReceiver
+import org.OperatorFoundation.MoonbounceAndroidKotlin.UDPStatusReceiver
 import java.lang.Exception
 import org.operatorfoundation.moonbouncevpnservice.*
 
 class MainActivity : AppCompatActivity()
 {
     val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
-    val networkTests = NetworkTests()
+    val broadcastTCPAction = "org.operatorfoundation.moonbounceAndroidKotlin.tcp.status"
+    val broadcastUDPAction = "org.operatorfoundation.moonbounceAndroidKotlin.udp.status"
+    val networkTests = NetworkTests(this)
     var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var disallowedApp: String? = null
     var excludeRoute: String? = null
-    var receiver: BroadcastReceiver? = null
+    var vpnStatusReceiver: BroadcastReceiver? = null
+    var tcpStatusReceiver: BroadcastReceiver? = null
+    var udpStatusReceiver: BroadcastReceiver? = null
     lateinit var ipEditText: TextView
     lateinit var resultText: TextView
 
@@ -81,11 +83,14 @@ class MainActivity : AppCompatActivity()
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
         val stopVPNButton = findViewById<Button>(R.id.stopVPN_button)
 
-        configureReceiver()
+        configureVPNReceiver()
 
         connectButton.setOnClickListener {
             connectTapped()
         }
+
+        configureTCPReceiver()
+        configureUDPReceiver()
 
         testTCPButton.setOnClickListener {
             testTCPClicked()
@@ -101,14 +106,31 @@ class MainActivity : AppCompatActivity()
 
     }
 
-    private fun configureReceiver()
+    private fun configureVPNReceiver()
     {
         val filter = IntentFilter()
         filter.addAction(broadcastAction)
-        receiver = StatusReceiver()
-
+        vpnStatusReceiver = StatusReceiver()
+        val broadcastPermission = ""
         // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
-        registerReceiver(receiver, filter)
+        registerReceiver(vpnStatusReceiver, filter)
+    }
+
+    private fun configureTCPReceiver()
+    {
+        val filter = IntentFilter()
+        filter.addAction(broadcastTCPAction)
+        tcpStatusReceiver = TCPStatusReceiver()
+        // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
+        registerReceiver(tcpStatusReceiver, filter)
+    }
+
+    private fun configureUDPReceiver()
+    {
+        val filter = IntentFilter()
+        filter.addAction(broadcastUDPAction)
+        udpStatusReceiver = UDPStatusReceiver()
+        registerReceiver(udpStatusReceiver, filter)
     }
 
     fun stopVPNButtonTapped() {
@@ -128,7 +150,6 @@ class MainActivity : AppCompatActivity()
     fun testTCPClicked()
     {
         println("Test TCP Clicked.")
-        resultText.text = "Test TCP Tapped."
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
@@ -138,7 +159,6 @@ class MainActivity : AppCompatActivity()
     fun testUDPTapped()
     {
         println("Test UDP Clicked.")
-        resultText.text = "Test UDP Tapped."
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
@@ -212,6 +232,8 @@ class MainActivity : AppCompatActivity()
     override fun onDestroy()
     {
         super.onDestroy()
-        unregisterReceiver(receiver)
+        unregisterReceiver(vpnStatusReceiver)
+        unregisterReceiver(tcpStatusReceiver)
+        unregisterReceiver(udpStatusReceiver)
     }
 }

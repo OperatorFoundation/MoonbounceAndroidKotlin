@@ -1,19 +1,15 @@
 package org.operatorfoundation.moonbouncevpnservice
 
 import android.content.Intent
-import android.net.InetAddresses
 import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
-import android.view.View
-import androidx.annotation.RequiresApi
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.Inet4Address
 import java.net.InetAddress
 import kotlin.concurrent.thread
 
@@ -99,7 +95,7 @@ class MBAKVpnService: VpnService()
                     {
                         runVPNtoServer()
                     }
-
+                    println("We have successfully created a VPN tunnel.")
                     // We have successfully created a VPN tunnel
                     broadcastStatus(true)
                 }
@@ -161,7 +157,6 @@ class MBAKVpnService: VpnService()
 
     fun runVPNtoServer()
     {
-
 
         while (true)
         {
