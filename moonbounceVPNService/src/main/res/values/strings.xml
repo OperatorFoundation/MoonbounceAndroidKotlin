@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_title">VPN Service is ON</string>
+    <string name="notification_message">VPN Service is ON</string>
+    <string name="ticker_text">Ticker Text</string>
+</resources>

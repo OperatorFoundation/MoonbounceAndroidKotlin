@@ -1,11 +1,15 @@
 package org.operatorfoundation.moonbouncevpnservice
 
+import android.app.Notification
+import android.app.PendingIntent
 import android.content.Intent
 import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
+import android.util.Log
+import androidx.annotation.RequiresApi
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
@@ -13,38 +17,73 @@ import java.io.FileOutputStream
 import java.net.InetAddress
 import kotlin.concurrent.thread
 
+
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
 val DISALLOWED_APP = "DisallowedApp"
 const val EXCLUDE_ROUTE = "ExcludeRoute"
 
-class MBAKVpnService: VpnService()
+class MBAKVpnService : VpnService()
 {
-    val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
-    val isConnected = "moonbounceVpnConnected"
-    private var builder: Builder = Builder()
-    private var parcelFileDescriptor: ParcelFileDescriptor? = null
-    private var flowerConnection: FlowerConnection? = null
-    private var inputStream: FileInputStream? = null
-    private var outputStream: FileOutputStream? = null
-    private val dnsServerIP = "8.8.8.8"
-    private val route = "0.0.0.0"
-    private val subnetMask = 8
-    private var disallowedApp: String? = null
-    private var excludeRoute: String? = null
+    val TAG = "MBAKVpnService"
+
+//    @RequiresApi(Build.VERSION_CODES.M)
+//    val pendingIntent: PendingIntent =
+//        Intent().let { notificationIntent ->
+//            PendingIntent.getActivity(this, 0, notificationIntent,
+//                PendingIntent.FLAG_IMMUTABLE)}
+//
+//    val notification: Notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//        val CHANNEL_DEFAULT_IMPORTANCE = "Channel Default Importance"
+//        Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
+//            .setContentTitle(getText(R.string.notification_title))
+//            .setContentText(getText(R.string.notification_message))
+//            .setSmallIcon(R.drawable.ic_launcher)
+//            .setContentIntent(pendingIntent)
+//            .setTicker(getText(R.string.ticker_text))
+//            .build()
+//
+//    } else {
+//        TODO("VERSION.SDK_INT < O")
+//    }
+
+    var parcelFileDescriptor: ParcelFileDescriptor? = null
+    var flowerConnection: FlowerConnection? = null
+    var inputStream: FileInputStream? = null
+    var outputStream: FileOutputStream? = null
     var transportServerIP = ""
     var transportServerPort = 1234
 
+    private val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
+    private var isConnected = "moonbounceVpnConnected"
+
+    private val dnsServerIP = "8.8.8.8"
+    private val route = "0.0.0.0"
+    private val subnetMask = 8
+    private var builder: Builder = Builder()
+    private var disallowedApp: String? = null
+    private var excludeRoute: String? = null
+
+    //@RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
+
+        print("****** onStartCommand called *******")
+        super.onStartCommand(intent, flags, startId)
+
         getConnectInfoFromIntent(intent)
         connect()
+        //applicationContext.startForegroundService(intent)
+
+        //startForeground(1337, notification)
 
         return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder?
     {
+        print("****** onBind called *******")
+        Log.d(TAG, "onBind Called")
         // TODO: https://developer.android.com/reference/android/app/Service#onBind(android.content.Intent)
         return super.onBind(intent)
     }
@@ -299,25 +338,31 @@ class MBAKVpnService: VpnService()
             .addRoute(route, 0)
 
         // TODO: These need to be options the user decides.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            disallowedApp?.let {
-                println("Add disallowed application: $it")
-                builder.addDisallowedApplication(it)
-            }
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+            throw java.lang.IllegalArgumentException("Device is not compatible with this feature.")
+        }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  // Lollipop = API 21 = Version 5
             {
-                excludeRoute?.let {
-                    val excludeRouteInetAddress = InetAddress.getByName(it)
-                    println("Get the excludeRouteInetAddress: $excludeRouteInetAddress")
-                    val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
-                    println("Get the excludeRouteIpPrefix: $excludeRouteIpPrefix")
+                disallowedApp?.let {
+                    val excludeDisallowedApp =
+                        println("Add disallowed application: $it")
+                    builder.addDisallowedApplication(it)
+                }
 
-                    builder.excludeRoute(excludeRouteIpPrefix)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)  // TIRAMISU = API 33 = Version 13
+                {
+                    excludeRoute?.let {
+                        val excludeRouteInetAddress = InetAddress.getByName(it)
+                        println("Get the excludeRouteInetAddress: $excludeRouteInetAddress")
+                        val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
+                        println("Get the excludeRouteIpPrefix: $excludeRouteIpPrefix")
+
+                        builder.excludeRoute(excludeRouteIpPrefix)
+                    }
                 }
             }
-        }
 
         val parcelFileDescriptor = builder.establish()
 
@@ -378,31 +423,38 @@ class MBAKVpnService: VpnService()
     fun stopVPN()
     {
         println("✋ Stopping VPN  ✋")
+        println("****** stopVPN called ******")
+        Log.d(TAG, "onStopVPN Called")
         cleanUp()
         stopSelf()
     }
 
     fun cleanUp()
     {
+        println("****** cleanUp called *******")
+        Log.d(TAG, "cleanUp Called")
         parcelFileDescriptor?.close()
         flowerConnection?.connection?.close()
         outputStream?.close()
         inputStream?.close()
+
     }
 
     override fun onDestroy()
     {
         println("✋ onDestroy called ✋")
+        Log.d(TAG, "onDestroy Called")
         super.onDestroy()
-
         cleanUp()
     }
 
     override fun onRevoke()
     {
         println("✋ onRevoke called ✋")
+        Log.d(TAG, "onRevoke Called")
         super.onRevoke()
 
+        stopVPN()
         cleanUp()
     }
 }

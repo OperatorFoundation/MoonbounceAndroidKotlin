@@ -2,27 +2,39 @@ package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.app.Activity
 import android.content.BroadcastReceiver
-import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
-import android.widget.Button
 import android.os.Bundle
+import android.util.Log
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import org.OperatorFoundation.MoonbounceAndroidKotlin.StatusReceiver
-import org.OperatorFoundation.MoonbounceAndroidKotlin.TCPStatusReceiver
-import org.OperatorFoundation.MoonbounceAndroidKotlin.UDPStatusReceiver
-import java.lang.Exception
-import org.operatorfoundation.moonbouncevpnservice.*
+import androidx.appcompat.app.AppCompatActivity
+import org.OperatorFoundation.MoonbounceAndroidKotlin.*
+import org.operatorfoundation.moonbouncevpnservice.EXCLUDE_ROUTE
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
+import org.operatorfoundation.moonbouncevpnservice.NetworkTests
+import org.operatorfoundation.moonbouncevpnservice.SERVER_IP
+
+const val IP_ADDRESS = "ip_address"
+const val SERVER_PORT = "server_port"
+const val DISALLOWED_APP = "disallowed_app"
+const val EXCLUDE_APP = "exclude_app"
 
 class MainActivity : AppCompatActivity()
 {
+    val TAG = "MainActivity"
+    //private val mbakVpnService = MBAKVpnService()
+    val SAMPLE_ALIAS = "MYALIAS"
+
+    val networkTests = NetworkTests(this)
+
     val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
     val broadcastTCPAction = "org.operatorfoundation.moonbounceAndroidKotlin.tcp.status"
     val broadcastUDPAction = "org.operatorfoundation.moonbounceAndroidKotlin.udp.status"
-    val networkTests = NetworkTests(this)
+
     var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
@@ -33,6 +45,8 @@ class MainActivity : AppCompatActivity()
     var udpStatusReceiver: BroadcastReceiver? = null
     lateinit var ipEditText: TextView
     lateinit var resultText: TextView
+
+
 
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -68,6 +82,7 @@ class MainActivity : AppCompatActivity()
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate Called")
         setContentView(R.layout.activity_main)
 
         if (vpnServiceIntent == null)
@@ -100,10 +115,10 @@ class MainActivity : AppCompatActivity()
             testUDPTapped()
         }
 
+        configureVPNReceiver()
         stopVPNButton.setOnClickListener {
             stopVPNButtonTapped()
         }
-
     }
 
     private fun configureVPNReceiver()
@@ -143,7 +158,7 @@ class MainActivity : AppCompatActivity()
     override fun stopService(name: Intent?): Boolean
     {
         println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
-
+        //stopService(vpnServiceIntent)
         return super.stopService(name)
     }
 
@@ -217,6 +232,7 @@ class MainActivity : AppCompatActivity()
 //            bindService(vpnServiceIntent, 0)
 
                     startService(vpnServiceIntent)
+                    //updateTextStatus()
                 }
             }
             catch (error: Exception)
@@ -224,16 +240,77 @@ class MainActivity : AppCompatActivity()
                 val errorString = "There was an error creating the VPN Service: " + error.localizedMessage
                 println("There was an error creating the VPN Service: " + error.localizedMessage)
                 resultText.text = errorString
+                //updateTextStatus()
                 return
             }
         }
     }
 
+//    private fun updateTextStatus() {
+//        if(isMyServiceRunning(MBAKVpnService::class.java)) {
+//            findViewById<TextView>(R.id.txt_service_status)?.text = "Service is Running."
+//        }else{
+//            findViewById<TextView>(R.id.txt_service_status)?.text = "Service is NOT Running."
+//        }
+//    }
+//
+//    private fun isMyServiceRunning(serviceClass: Class<*>):Boolean {
+//        try {
+//            val manager =
+//                getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+//            for (service in manager.getRunningServices(
+//                Int.MAX_VALUE
+//            )) {
+//                if (serviceClass.name == service.service.className) {
+//                    return true
+//                }
+//            }
+//        } catch (e: Exception) {
+//            return false
+//        }
+//        return false
+//    }
+//
+//    companion object{
+//        const val ACTION_STOP = "${BuildConfig.APPLICATION_ID}.stop"
+//    }
+
     override fun onDestroy()
     {
         super.onDestroy()
+        Log.d(TAG, "onDestroy Called")
+        stopService(vpnServiceIntent)
         unregisterReceiver(vpnStatusReceiver)
         unregisterReceiver(tcpStatusReceiver)
         unregisterReceiver(udpStatusReceiver)
     }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop Called")
+        //mbakVpnService.stopVPN()
+        unregisterReceiver(vpnStatusReceiver)
+        unregisterReceiver(tcpStatusReceiver)
+        unregisterReceiver(udpStatusReceiver)
+        //stopForeground()
+    }
+
+//    private fun stopForeground() {
+//
+//        stopService(vpnServiceIntent)
+//        //mbakVpnService.stopVPN()
+//        unregisterReceiver(vpnStatusReceiver)
+//        unregisterReceiver(tcpStatusReceiver)
+//        unregisterReceiver(udpStatusReceiver)
+//    }
+
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
+//
+//        Log.d(TAG, "onSaveInstanceState Called")
+//        outState.putString(IP_ADDRESS, ipAddress)
+//        outState.putInt(SERVER_PORT, serverPort)
+//        outState.putString(DISALLOWED_APP, disallowedApp)
+//        outState.putString(EXCLUDE_APP, excludeRoute)
+//    }
 }
