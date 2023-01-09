@@ -13,10 +13,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import org.OperatorFoundation.MoonbounceAndroidKotlin.*
-import org.operatorfoundation.moonbouncevpnservice.EXCLUDE_ROUTE
-import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
-import org.operatorfoundation.moonbouncevpnservice.NetworkTests
-import org.operatorfoundation.moonbouncevpnservice.SERVER_IP
+import org.operatorfoundation.moonbouncevpnservice.*
 
 const val IP_ADDRESS = "ip_address"
 const val SERVER_PORT = "server_port"
@@ -158,8 +155,18 @@ class MainActivity : AppCompatActivity()
     override fun stopService(name: Intent?): Boolean
     {
         println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
-        //stopService(vpnServiceIntent)
-        return super.stopService(name)
+
+        if (name == null)
+        {
+            print("There is no service to stop.")
+            return false
+        }
+        else
+        {
+            val serviceStopped = super.stopService(name)
+            println("Service Stopped: $serviceStopped")
+            return serviceStopped
+        }
     }
 
     fun testTCPClicked()
