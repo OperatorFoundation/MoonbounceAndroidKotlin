@@ -90,19 +90,23 @@ class MainActivity : AppCompatActivity()
         resultText = findViewById<TextView>(R.id.resultText)
 
         ipEditText = findViewById<EditText>(R.id.server_address)
+        val chooseDisallowAppsButton = findViewById<Button>(R.id.choose_apps)
         val connectButton = findViewById<Button>(R.id.connect_button)
         val testTCPButton = findViewById<Button>(R.id.test_TCP)
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
         val stopVPNButton = findViewById<Button>(R.id.stopVPN_button)
 
         configureVPNReceiver()
+        configureTCPReceiver()
+        configureUDPReceiver()
+
+        chooseDisallowAppsButton.setOnClickListener {
+            chooseDisallowedApps()
+        }
 
         connectButton.setOnClickListener {
             connectTapped()
         }
-
-        configureTCPReceiver()
-        configureUDPReceiver()
 
         testTCPButton.setOnClickListener {
             testTCPClicked()
@@ -143,6 +147,20 @@ class MainActivity : AppCompatActivity()
         filter.addAction(broadcastUDPAction)
         udpStatusReceiver = UDPStatusReceiver()
         registerReceiver(udpStatusReceiver, filter)
+    }
+
+    fun chooseDisallowedApps() {
+        val appManager = AppManager(applicationContext)
+        val installedApps = appManager.getApps()
+        println("Printint installed app information:")
+        for (app in installedApps)
+        {
+            println("\napp name - ${app.name}")
+            println("app id - ${app.id}")
+            println("is a system app - ${app.isSystem}")
+            println("has an icon - ${app.icon != null}\n")
+        }
+
     }
 
     fun stopVPNButtonTapped() {
@@ -228,8 +246,6 @@ class MainActivity : AppCompatActivity()
                     }
                     // Start the VPN Service
                     // TODO: Implement exclude IP
-                    // TODO: This should come from the user.
-
                     vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
                     vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
                     vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)

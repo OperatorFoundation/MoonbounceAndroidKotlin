@@ -38,7 +38,7 @@
         android:minHeight="48dp"
         android:text="1234"
         android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/disallowed_app"
+        app:layout_constraintBottom_toTopOf="@+id/choose_apps"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/server_address" />
@@ -47,8 +47,6 @@
         android:id="@+id/disallowed_app"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="8dp"
         android:gravity="center_horizontal"
         android:hint="Enter The App to Disallow"
         android:imeOptions="actionDone"
@@ -60,7 +58,7 @@
         app:layout_constraintBottom_toTopOf="@+id/exclude_route"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/server_port" />
+        app:layout_constraintTop_toBottomOf="@+id/choose_apps" />
 
     <EditText
         android:id="@+id/exclude_route"
@@ -148,5 +146,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/test_TCP" />
+
+    <Button
+        android:id="@+id/choose_apps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="Disallow Apps"
+        app:layout_constraintBottom_toTopOf="@+id/disallowed_app"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/server_port" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
