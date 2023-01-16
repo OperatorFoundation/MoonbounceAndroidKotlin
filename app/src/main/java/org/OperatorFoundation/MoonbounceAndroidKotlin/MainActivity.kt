@@ -2,8 +2,10 @@ package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.app.Activity
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.net.VpnService
 import android.os.Bundle
 import android.util.Log
@@ -62,8 +64,8 @@ class MainActivity : AppCompatActivity()
             vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
 
             // TODO: https://developer.android.com/reference/android/content/Context#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
-//            bindService(vpnServiceIntent, 0)
             startService(vpnServiceIntent)
+
 
             resultText.text ="Starting the VPN service."
         }
@@ -170,22 +172,22 @@ class MainActivity : AppCompatActivity()
         stopService(vpnServiceIntent)
     }
 
-    override fun stopService(name: Intent?): Boolean
-    {
-        println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
-
-        if (name == null)
-        {
-            print("There is no service to stop.")
-            return false
-        }
-        else
-        {
-            val serviceStopped = super.stopService(name)
-            println("Service Stopped: $serviceStopped")
-            return serviceStopped
-        }
-    }
+//    override fun stopService(name: Intent?): Boolean
+//    {
+//        println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
+//
+//        if (name == null)
+//        {
+//            print("There is no service to stop.")
+//            return false
+//        }
+//        else
+//        {
+//            val serviceStopped = super.stopService(name)
+//            println("$name Service Stopped: $serviceStopped")
+//            return serviceStopped
+//        }
+//    }
 
     fun testTCPClicked()
     {
@@ -252,10 +254,9 @@ class MainActivity : AppCompatActivity()
                     vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
 
                     // TODO: https://developer.android.com/reference/android/content/Context#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
-//            bindService(vpnServiceIntent, 0)
 
                     startService(vpnServiceIntent)
-                    //updateTextStatus()
+
                 }
             }
             catch (error: Exception)
@@ -263,45 +264,16 @@ class MainActivity : AppCompatActivity()
                 val errorString = "There was an error creating the VPN Service: " + error.localizedMessage
                 println("There was an error creating the VPN Service: " + error.localizedMessage)
                 resultText.text = errorString
-                //updateTextStatus()
                 return
             }
         }
     }
 
-//    private fun updateTextStatus() {
-//        if(isMyServiceRunning(MBAKVpnService::class.java)) {
-//            findViewById<TextView>(R.id.txt_service_status)?.text = "Service is Running."
-//        }else{
-//            findViewById<TextView>(R.id.txt_service_status)?.text = "Service is NOT Running."
-//        }
-//    }
-//
-//    private fun isMyServiceRunning(serviceClass: Class<*>):Boolean {
-//        try {
-//            val manager =
-//                getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-//            for (service in manager.getRunningServices(
-//                Int.MAX_VALUE
-//            )) {
-//                if (serviceClass.name == service.service.className) {
-//                    return true
-//                }
-//            }
-//        } catch (e: Exception) {
-//            return false
-//        }
-//        return false
-//    }
-//
-//    companion object{
-//        const val ACTION_STOP = "${BuildConfig.APPLICATION_ID}.stop"
-//    }
-
     override fun onDestroy()
     {
-        super.onDestroy()
+        println("✋ onDestroy called ✋")
         Log.d(TAG, "onDestroy Called")
+        super.onDestroy()
         stopService(vpnServiceIntent)
         unregisterReceiver(vpnStatusReceiver)
         unregisterReceiver(tcpStatusReceiver)
@@ -311,21 +283,10 @@ class MainActivity : AppCompatActivity()
     override fun onStop() {
         super.onStop()
         Log.d(TAG, "onStop Called")
-        //mbakVpnService.stopVPN()
         unregisterReceiver(vpnStatusReceiver)
         unregisterReceiver(tcpStatusReceiver)
         unregisterReceiver(udpStatusReceiver)
-        //stopForeground()
     }
-
-//    private fun stopForeground() {
-//
-//        stopService(vpnServiceIntent)
-//        //mbakVpnService.stopVPN()
-//        unregisterReceiver(vpnStatusReceiver)
-//        unregisterReceiver(tcpStatusReceiver)
-//        unregisterReceiver(udpStatusReceiver)
-//    }
 
 //    override fun onSaveInstanceState(outState: Bundle) {
 //        super.onSaveInstanceState(outState)
