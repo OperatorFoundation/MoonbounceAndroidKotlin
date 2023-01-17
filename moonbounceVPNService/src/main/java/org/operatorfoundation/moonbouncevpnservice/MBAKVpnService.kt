@@ -382,6 +382,8 @@ class MBAKVpnService : VpnService()
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
             disallowedApp = intent.getStringExtra(DISALLOWED_APP)
             excludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
+            println("Disallowed App is: $disallowedApp")
+            println("Exclude Route is: $excludeRoute")
         }
         else
         {

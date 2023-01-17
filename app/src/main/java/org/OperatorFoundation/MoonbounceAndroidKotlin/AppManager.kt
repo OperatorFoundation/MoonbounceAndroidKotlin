@@ -1,15 +1,10 @@
 package org.operatorfoundation.moonbounceAndroidKotlin
 
-import android.app.Activity
-import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
-
 import android.content.Context
-import kotlinx.coroutines.*
-import java.lang.ref.WeakReference
-import kotlin.coroutines.CoroutineContext
+
 
 class AppManager(val context: Context)
 {

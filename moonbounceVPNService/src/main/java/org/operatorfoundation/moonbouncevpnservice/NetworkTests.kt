@@ -1,10 +1,7 @@
 package org.operatorfoundation.moonbouncevpnservice
 
 import android.content.Intent
-
 import org.operatorfoundation.transmission.ConnectionType
-
-
 import org.operatorfoundation.transmission.TransmissionConnection
 import kotlin.concurrent.thread
 import android.content.Context

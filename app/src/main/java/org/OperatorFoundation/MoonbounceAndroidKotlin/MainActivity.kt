@@ -25,7 +25,6 @@ const val EXCLUDE_APP = "exclude_app"
 class MainActivity : AppCompatActivity()
 {
     val TAG = "MainActivity"
-    //private val mbakVpnService = MBAKVpnService()
     val SAMPLE_ALIAS = "MYALIAS"
 
     val networkTests = NetworkTests(this)
@@ -45,8 +44,6 @@ class MainActivity : AppCompatActivity()
     lateinit var ipEditText: TextView
     lateinit var resultText: TextView
 
-
-
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
             result ->
@@ -65,7 +62,6 @@ class MainActivity : AppCompatActivity()
 
             // TODO: https://developer.android.com/reference/android/content/Context#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
             startService(vpnServiceIntent)
-
 
             resultText.text ="Starting the VPN service."
         }
