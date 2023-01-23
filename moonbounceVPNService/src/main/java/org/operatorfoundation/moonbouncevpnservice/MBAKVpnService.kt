@@ -26,27 +26,6 @@ const val EXCLUDE_ROUTE = "ExcludeRoute"
 class MBAKVpnService : VpnService()
 {
     val TAG = "MBAKVpnService"
-
-//    @RequiresApi(Build.VERSION_CODES.M)
-//    val pendingIntent: PendingIntent =
-//        Intent().let { notificationIntent ->
-//            PendingIntent.getActivity(this, 0, notificationIntent,
-//                PendingIntent.FLAG_IMMUTABLE)}
-//
-//    val notification: Notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//        val CHANNEL_DEFAULT_IMPORTANCE = "Channel Default Importance"
-//        Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
-//            .setContentTitle(getText(R.string.notification_title))
-//            .setContentText(getText(R.string.notification_message))
-//            .setSmallIcon(R.drawable.ic_launcher)
-//            .setContentIntent(pendingIntent)
-//            .setTicker(getText(R.string.ticker_text))
-//            .build()
-//
-//    } else {
-//        TODO("VERSION.SDK_INT < O")
-//    }
-
     var parcelFileDescriptor: ParcelFileDescriptor? = null
     var flowerConnection: FlowerConnection? = null
     var inputStream: FileInputStream? = null
@@ -61,10 +40,9 @@ class MBAKVpnService : VpnService()
     private val route = "0.0.0.0"
     private val subnetMask = 8
     private var builder: Builder = Builder()
-    private var disallowedApp: String? = null
+    private var disallowedApp = ""
     private var excludeRoute: String? = null
 
-    //@RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
 
@@ -78,14 +56,6 @@ class MBAKVpnService : VpnService()
         //startForeground(1337, notification)
 
         return START_STICKY
-    }
-
-    override fun onBind(intent: Intent?): IBinder?
-    {
-        print("****** onBind called *******")
-        Log.d(TAG, "onBind Called")
-        // TODO: https://developer.android.com/reference/android/app/Service#onBind(android.content.Intent)
-        return super.onBind(intent)
     }
 
     fun connect()
@@ -337,27 +307,19 @@ class MBAKVpnService : VpnService()
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
 
-        // TODO: These need to be options the user decides.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-            throw java.lang.IllegalArgumentException("Device is not compatible with this feature.")
-        }
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  // Lollipop = API 21 = Version 5
             {
-                disallowedApp?.let {
-                    val excludeDisallowedApp =
-                        println("Add disallowed application: $it")
-                    builder.addDisallowedApplication(it)
-                }
+                println("********* Add disallowed application: $disallowedApp ********")
+                builder.addDisallowedApplication(disallowedApp)
 
-
+                // TODO: Test excludeRoute
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)  // TIRAMISU = API 33 = Version 13
                 {
                     excludeRoute?.let {
                         val excludeRouteInetAddress = InetAddress.getByName(it)
                         println("Get the excludeRouteInetAddress: $excludeRouteInetAddress")
                         val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
-                        println("Get the excludeRouteIpPrefix: $excludeRouteIpPrefix")
+                        println("********* Get the excludeRouteIpPrefix: $excludeRouteIpPrefix *******")
 
                         builder.excludeRoute(excludeRouteIpPrefix)
                     }
@@ -375,15 +337,18 @@ class MBAKVpnService : VpnService()
     {
         val maybeIP: String?
         val maybePort: Int
+        val maybeDisallowedApp: String?
 
         if (intent != null)
         {
             maybeIP = intent.getStringExtra(SERVER_IP)
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
-            disallowedApp = intent.getStringExtra(DISALLOWED_APP)
+            maybeDisallowedApp = intent.getStringExtra(DISALLOWED_APP)
             excludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
-            println("Disallowed App is: $disallowedApp")
-            println("Exclude Route is: $excludeRoute")
+            println("MBAKVpnService Server IP is: $maybeIP")
+            println("MBAKVpnService Server Port is: $maybePort")
+            println("MBAKVpnService Disallowed App is: $maybeDisallowedApp")
+            println("MBAKVpnService Exclude Route is: $excludeRoute")
         }
         else
         {
@@ -411,6 +376,14 @@ class MBAKVpnService : VpnService()
             return false
         }
 
+        if (maybeDisallowedApp != null)
+        {
+            disallowedApp = maybeDisallowedApp
+        }
+        else
+        {
+            println("MBAKVpnService: No Disallowed App was requested.")
+        }
         return true
     }
 

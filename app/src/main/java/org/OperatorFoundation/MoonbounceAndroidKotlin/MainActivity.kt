@@ -2,10 +2,8 @@ package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.app.Activity
 import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.ServiceConnection
 import android.net.VpnService
 import android.os.Bundle
 import android.util.Log
@@ -17,15 +15,9 @@ import androidx.appcompat.app.AppCompatActivity
 import org.OperatorFoundation.MoonbounceAndroidKotlin.*
 import org.operatorfoundation.moonbouncevpnservice.*
 
-const val IP_ADDRESS = "ip_address"
-const val SERVER_PORT = "server_port"
-const val DISALLOWED_APP = "disallowed_app"
-const val EXCLUDE_APP = "exclude_app"
-
 class MainActivity : AppCompatActivity()
 {
     val TAG = "MainActivity"
-    val SAMPLE_ALIAS = "MYALIAS"
 
     val networkTests = NetworkTests(this)
 
@@ -50,18 +42,7 @@ class MainActivity : AppCompatActivity()
 
         if (result.resultCode == Activity.RESULT_OK) // User has granted the needed permissions
         {
-            // Start the VPN Service
-            if (vpnServiceIntent == null)
-            {
-                vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-            }
-            vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
-            vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
-            vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
-            vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
-
-            // TODO: https://developer.android.com/reference/android/content/Context#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
-            startService(vpnServiceIntent)
+            startVPNService()
 
             resultText.text ="Starting the VPN service."
         }
@@ -125,7 +106,6 @@ class MainActivity : AppCompatActivity()
         val filter = IntentFilter()
         filter.addAction(broadcastAction)
         vpnStatusReceiver = StatusReceiver()
-        val broadcastPermission = ""
         // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
         registerReceiver(vpnStatusReceiver, filter)
     }
@@ -168,22 +148,22 @@ class MainActivity : AppCompatActivity()
         stopService(vpnServiceIntent)
     }
 
-//    override fun stopService(name: Intent?): Boolean
-//    {
-//        println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
-//
-//        if (name == null)
-//        {
-//            print("There is no service to stop.")
-//            return false
-//        }
-//        else
-//        {
-//            val serviceStopped = super.stopService(name)
-//            println("$name Service Stopped: $serviceStopped")
-//            return serviceStopped
-//        }
-//    }
+    override fun stopService(name: Intent?): Boolean
+    {
+        println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
+
+        if (name == null)
+        {
+            print("There is no service to stop.")
+            return false
+        }
+        else
+        {
+            val serviceStopped = super.stopService(name)
+            println("$name Service Stopped: $serviceStopped")
+            return serviceStopped
+        }
+    }
 
     fun testTCPClicked()
     {
@@ -238,21 +218,7 @@ class MainActivity : AppCompatActivity()
                 }
                 else // The user has already given permission, and the VPN Service is already prepared
                 {
-                    if (vpnServiceIntent == null)
-                    {
-                        vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-                    }
-                    // Start the VPN Service
-                    // TODO: Implement exclude IP
-                    vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
-                    vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
-                    vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
-                    vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
-
-                    // TODO: https://developer.android.com/reference/android/content/Context#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
-
-                    startService(vpnServiceIntent)
-
+                    startVPNService()
                 }
             }
             catch (error: Exception)
@@ -284,13 +250,23 @@ class MainActivity : AppCompatActivity()
         unregisterReceiver(udpStatusReceiver)
     }
 
-//    override fun onSaveInstanceState(outState: Bundle) {
-//        super.onSaveInstanceState(outState)
-//
-//        Log.d(TAG, "onSaveInstanceState Called")
-//        outState.putString(IP_ADDRESS, ipAddress)
-//        outState.putInt(SERVER_PORT, serverPort)
-//        outState.putString(DISALLOWED_APP, disallowedApp)
-//        outState.putString(EXCLUDE_APP, excludeRoute)
-//    }
+    fun startVPNService() {
+        if (vpnServiceIntent == null)
+        {
+            vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
+        }
+
+        println("MainActivity Server IP Address: $ipAddress")
+        println("MainActivity Server Port: $serverPort")
+        println("MainActivity Disallowed App: $disallowedApp")
+        println("MainActivity Exclude Route: $excludeRoute")
+
+        vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
+        vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
+        vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
+        vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
+
+        // Start the VPN Service
+        startService(vpnServiceIntent)
+    }
 }
