@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.content.Context
 
-
 class AppManager(val context: Context)
 {
     fun getApps(): List<App>
@@ -36,8 +35,6 @@ class AppManager(val context: Context)
         return apps
     }
 }
-
-
 
 typealias AppId = String
 

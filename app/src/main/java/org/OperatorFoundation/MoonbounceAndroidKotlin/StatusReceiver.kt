@@ -1,62 +1,53 @@
-package org.OperatorFoundation.MoonbounceAndroidKotlin
+package org.operatorfoundation.moonbounceAndroidKotlin
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
 
 class StatusReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
-        val isConnected = "moonbounceVpnConnected"
-        var statusString = "Received a VPN status update."
-        var connected = intent.getBooleanExtra(isConnected, false)
+        var statusString = "Received a status update."
 
-        statusString = if (connected) {
-            "VPN connected."
-        } else {
-            "VPN failed to connect."
+        if (intent.action == MBAKVpnService.vpnStatusNotification)
+        {
+            val connected = intent.getBooleanExtra(MBAKVpnService.VPN_CONNECTED_STATUS, false)
+
+            statusString = if (connected) {
+                "VPN connected."
+            } else {
+                "VPN failed to connect."
+            }
+        }
+        else if (intent.action == MBAKVpnService.tcpTestNotification)
+        {
+            val success = intent.getBooleanExtra(MBAKVpnService.TCP_TEST_STATUS, false)
+
+            statusString = if (success) {
+                "The TCP test was succesful."
+            } else {
+                "The TCP test failed."
+            }
+        }
+        else if (intent.action == MBAKVpnService.udpTestNotification)
+        {
+            val success = intent.getBooleanExtra(MBAKVpnService.TCP_TEST_STATUS, false)
+
+            statusString = if (success) {
+                "The UDP test was succesful."
+            } else {
+                "The UDP test failed."
+            }
+        }
+        else
+        {
+            statusString = "Received an unknown notification: ${intent.action}"
         }
 
         Toast.makeText(context, statusString, Toast.LENGTH_LONG).show()
     }
 }
 
-class TCPStatusReceiver : BroadcastReceiver() {
-
-    override fun onReceive(context: Context, intent: Intent) {
-        val isSuccessful = "TCP Tests Successful!"
-        var tcpStatusString = "Received a TCP status update."
-        var success = intent.getBooleanExtra(isSuccessful, false)
-
-        tcpStatusString = if (success)
-        {
-            "TCP Test is Successful!"
-        }
-        else
-        {
-            "TCP Test Not Successful!"
-        }
-        Toast.makeText(context, tcpStatusString, Toast.LENGTH_LONG).show()
-    }
-}
-
-class UDPStatusReceiver : BroadcastReceiver() {
-
-    override  fun onReceive(context: Context, intent: Intent) {
-        val isSuccessful = "UDP Tests Successful!"
-        var udpStatusString = "Received a UDP status update."
-        var success = intent.getBooleanExtra(isSuccessful, false)
-
-        udpStatusString = if (success)
-        {
-            "UDP Test is Successful!"
-        }
-        else
-        {
-            "UDP Test was NOT successful."
-        }
-        Toast.makeText(context, udpStatusString, Toast.LENGTH_LONG).show()
-    }
-}

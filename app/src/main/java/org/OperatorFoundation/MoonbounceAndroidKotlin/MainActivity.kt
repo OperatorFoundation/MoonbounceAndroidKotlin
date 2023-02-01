@@ -12,27 +12,20 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import org.OperatorFoundation.MoonbounceAndroidKotlin.*
 import org.operatorfoundation.moonbouncevpnservice.*
 
 class MainActivity : AppCompatActivity()
 {
     val TAG = "MainActivity"
-
     val networkTests = NetworkTests(this)
-
-    val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
-    val broadcastTCPAction = "org.operatorfoundation.moonbounceAndroidKotlin.tcp.status"
-    val broadcastUDPAction = "org.operatorfoundation.moonbounceAndroidKotlin.udp.status"
 
     var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var disallowedApp: String? = null
     var excludeRoute: String? = null
-    var vpnStatusReceiver: BroadcastReceiver? = null
-    var tcpStatusReceiver: BroadcastReceiver? = null
-    var udpStatusReceiver: BroadcastReceiver? = null
+    var statusReceiver: BroadcastReceiver? = null
+
     lateinit var ipEditText: TextView
     lateinit var resultText: TextView
 
@@ -61,6 +54,8 @@ class MainActivity : AppCompatActivity()
         Log.d(TAG, "onCreate Called")
         setContentView(R.layout.activity_main)
 
+        configureReceiver()
+
         if (vpnServiceIntent == null)
         {
             vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
@@ -74,10 +69,6 @@ class MainActivity : AppCompatActivity()
         val testTCPButton = findViewById<Button>(R.id.test_TCP)
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
         val stopVPNButton = findViewById<Button>(R.id.stopVPN_button)
-
-        configureVPNReceiver()
-        configureTCPReceiver()
-        configureUDPReceiver()
 
         chooseDisallowAppsButton.setOnClickListener {
             chooseDisallowedApps()
@@ -95,36 +86,20 @@ class MainActivity : AppCompatActivity()
             testUDPTapped()
         }
 
-        configureVPNReceiver()
         stopVPNButton.setOnClickListener {
             stopVPNButtonTapped()
         }
     }
 
-    private fun configureVPNReceiver()
+    private fun configureReceiver()
     {
         val filter = IntentFilter()
-        filter.addAction(broadcastAction)
-        vpnStatusReceiver = StatusReceiver()
+        filter.addAction(MBAKVpnService.vpnStatusNotification)
+        filter.addAction(MBAKVpnService.tcpTestNotification)
+        filter.addAction(MBAKVpnService.udpTestNotification)
+        statusReceiver = StatusReceiver()
         // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
-        registerReceiver(vpnStatusReceiver, filter)
-    }
-
-    private fun configureTCPReceiver()
-    {
-        val filter = IntentFilter()
-        filter.addAction(broadcastTCPAction)
-        tcpStatusReceiver = TCPStatusReceiver()
-        // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
-        registerReceiver(tcpStatusReceiver, filter)
-    }
-
-    private fun configureUDPReceiver()
-    {
-        val filter = IntentFilter()
-        filter.addAction(broadcastUDPAction)
-        udpStatusReceiver = UDPStatusReceiver()
-        registerReceiver(udpStatusReceiver, filter)
+        registerReceiver(statusReceiver, filter)
     }
 
     fun chooseDisallowedApps() {
@@ -237,17 +212,13 @@ class MainActivity : AppCompatActivity()
         Log.d(TAG, "onDestroy Called")
         super.onDestroy()
         stopService(vpnServiceIntent)
-        unregisterReceiver(vpnStatusReceiver)
-        unregisterReceiver(tcpStatusReceiver)
-        unregisterReceiver(udpStatusReceiver)
+        unregisterReceiver(statusReceiver)
     }
 
     override fun onStop() {
         super.onStop()
         Log.d(TAG, "onStop Called")
-        unregisterReceiver(vpnStatusReceiver)
-        unregisterReceiver(tcpStatusReceiver)
-        unregisterReceiver(udpStatusReceiver)
+        unregisterReceiver(statusReceiver)
     }
 
     fun startVPNService() {

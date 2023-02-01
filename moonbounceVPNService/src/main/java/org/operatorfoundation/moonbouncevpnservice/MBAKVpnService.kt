@@ -1,15 +1,11 @@
 package org.operatorfoundation.moonbouncevpnservice
 
-import android.app.Notification
-import android.app.PendingIntent
 import android.content.Intent
 import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
-import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import androidx.annotation.RequiresApi
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.*
 import java.io.FileInputStream
@@ -33,9 +29,6 @@ class MBAKVpnService : VpnService()
     var transportServerIP = ""
     var transportServerPort = 1234
 
-    private val broadcastAction = "org.operatorfoundation.moonbounceAndroidKotlin.status"
-    private var isConnected = "moonbounceVpnConnected"
-
     private val dnsServerIP = "8.8.8.8"
     private val route = "0.0.0.0"
     private val subnetMask = 8
@@ -43,9 +36,19 @@ class MBAKVpnService : VpnService()
     private var disallowedApp = ""
     private var excludeRoute: String? = null
 
+    companion object
+    {
+        const val vpnStatusNotification = "org.operatorfoundation.moonbounceAndroidKotlin.VPNStatusNotification"
+        const val tcpTestNotification = "org.operatorfoundation.moonbounceAndroidKotlin.tcptestnotification"
+        const val udpTestNotification = "org.operatorfoundation.moonbounceAndroidKotlin.udptestnotification"
+
+        const val VPN_CONNECTED_STATUS = "VpnConnected"
+        const val TCP_TEST_STATUS = "TCPTestPassed"
+        const val UDP_TEST_STATUS = "UDPTestPassed"
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
-
         print("****** onStartCommand called *******")
         super.onStartCommand(intent, flags, startId)
 
@@ -85,7 +88,7 @@ class MBAKVpnService : VpnService()
                     stopVPN()
 
                     // Failed to create VPN tunnel
-                    broadcastStatus(false)
+                    broadcastStatus(vpnStatusNotification, VPN_CONNECTED_STATUS, false)
                     return@thread
                 }
                 else
@@ -106,13 +109,13 @@ class MBAKVpnService : VpnService()
                     }
                     println("We have successfully created a VPN tunnel.")
                     // We have successfully created a VPN tunnel
-                    broadcastStatus(true)
+                    broadcastStatus(vpnStatusNotification, VPN_CONNECTED_STATUS, true)
                 }
             } catch (error: Exception) {
                 println("🌙 MBAKVpnService: Error using ip $transportServerIP and port $transportServerPort. Error message: " + error.message)
 
                 // Failed to create VPN tunnel
-                broadcastStatus(false)
+                broadcastStatus(vpnStatusNotification, VPN_CONNECTED_STATUS, false)
             }
         }
     }
@@ -387,11 +390,11 @@ class MBAKVpnService : VpnService()
         return true
     }
 
-    fun broadcastStatus(connected: Boolean)
+    fun broadcastStatus(action: String, statusDescription: String, status: Boolean)
     {
         val intent = Intent()
-        intent.putExtra(isConnected, connected)
-        intent.action = broadcastAction
+        intent.putExtra(statusDescription, status)
+        intent.action = action
         sendBroadcast(intent)
     }
 

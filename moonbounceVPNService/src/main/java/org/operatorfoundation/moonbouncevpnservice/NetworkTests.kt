@@ -5,15 +5,14 @@ import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
 import kotlin.concurrent.thread
 import android.content.Context
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.TCP_TEST_STATUS
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.UDP_TEST_STATUS
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.tcpTestNotification
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.udpTestNotification
 
 
 class NetworkTests (val context: Context)
 {
-    private val broadcastTCPAction = "org.operatorfoundation.moonbounceAndroidKotlin.tcp.status"
-    val isSuccessful = "TCP Tests Successful!"
-
-    private val broadcastUDPAction = "org.operatorfoundation.moonbounceAndroidKotlin.udp.status"
-    val udpIsSuccessful = "UDP Tests Successful!"
     var host: String = "0.0.0.0"
     var udpEchoPort = 2233
     var tcpEchoPort = 2234
@@ -35,19 +34,19 @@ class NetworkTests (val context: Context)
                 if (result == null)
                 {
                     println("🌙 NetworkTests: UDP test tried to read, but got no response")
-                    udpBroadcastMessage(false)
+                    broadcastStatus(udpTestNotification, UDP_TEST_STATUS, false)
                 }
                 else
                 {
                     val resultString = String(result)
                     println("🌙 NetworkTests: UDP test got a response: $resultString")
-                    udpBroadcastMessage(true)
+                    broadcastStatus(udpTestNotification, UDP_TEST_STATUS, true)
                 }
             }
             catch(error: Exception)
             {
                 println("🌙 NetworkTests: UDP test failed to make a connection. $error")
-                udpBroadcastMessage(false)
+                broadcastStatus(udpTestNotification, UDP_TEST_STATUS, false)
             }
         }
     }
@@ -65,48 +64,56 @@ class NetworkTests (val context: Context)
                 println("🌙 TCP test: Transmission Connection created.")
                 transmissionConnection.write("ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ")
                 println("🌙 TCP test: Wrote some data...")
-                tcpBroadcastMessage(true)
 
                 val result = transmissionConnection.read(5)
 
                 if (result == null)
                 {
                     println("🌙 TCP test tried to read, but got no response")
-                    tcpBroadcastMessage(false)
+                    broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
                 }
                 else
                 {
                     val resultString = String(result)
                     println("🌙 NetworkTests: TCP test got a response: $resultString")
-                    tcpBroadcastMessage(true)
+
+                    broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
                 }
             }
             catch(error: Exception)
             {
                 println("🌙 NetworkTests: TCP test failed to make a connection. $error")
-                tcpBroadcastMessage(false)
+                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
             }
         }
     }
 
-    fun tcpBroadcastMessage(success: Boolean)
+    fun broadcastStatus(action: String, statusDescription: String, status: Boolean)
     {
-        println("*******BROADCASTING TCP MESSAGE")
-        Intent().also { intent ->
-            intent.action = broadcastTCPAction
-            intent.putExtra(isSuccessful, success)
-            context.sendBroadcast(intent)
-        }
+        val intent = Intent()
+        intent.putExtra(statusDescription, status)
+        intent.action = action
+        context.sendBroadcast(intent)
     }
 
-    fun udpBroadcastMessage(success: Boolean)
-    {
-        println("*******BROADCASTING UDP MESSAGE")
-
-        Intent().also { intent ->
-            intent.action = broadcastUDPAction
-            intent.putExtra(udpIsSuccessful, success)
-            context.sendBroadcast(intent)
-        }
-    }
+//    fun tcpBroadcastMessage(success: Boolean)
+//    {
+//        println("*******BROADCASTING TCP MESSAGE")
+//        Intent().also { intent ->
+//            intent.action = broadcastTCPAction
+//            intent.putExtra(isSuccessful, success)
+//            context.sendBroadcast(intent)
+//        }
+//    }
+//
+//    fun udpBroadcastMessage(success: Boolean)
+//    {
+//        println("*******BROADCASTING UDP MESSAGE")
+//
+//        Intent().also { intent ->
+//            intent.action = broadcastUDPAction
+//            intent.putExtra(udpIsSuccessful, success)
+//            context.sendBroadcast(intent)
+//        }
+//    }
 }
