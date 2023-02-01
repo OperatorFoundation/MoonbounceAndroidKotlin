@@ -29,10 +29,13 @@ class NetworkTests (val context: Context)
                     TransmissionConnection(host, udpEchoPort, ConnectionType.UDP, null)
                 transmissionConnection.write("ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ")
 
-                val result = transmissionConnection.read(22)
-
+                val result = transmissionConnection.read(68)
+                
                 if (result == null)
                 {
+                    // TODO: We are getting here before the write has finished,
+                    //  so even if we do eventually get the correct response
+                    //  the test has already sent a failure notification
                     println("🌙 NetworkTests: UDP test tried to read, but got no response")
                     broadcastStatus(udpTestNotification, UDP_TEST_STATUS, false)
                 }
