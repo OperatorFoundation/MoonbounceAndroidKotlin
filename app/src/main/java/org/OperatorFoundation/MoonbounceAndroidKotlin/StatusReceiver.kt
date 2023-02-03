@@ -11,7 +11,7 @@ class StatusReceiver : BroadcastReceiver()
     override fun onReceive(context: Context, intent: Intent)
     {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
-        var statusString = "Received a status update."
+        val statusString: String
 
         if (intent.action == MBAKVpnService.vpnStatusNotification)
         {

@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity()
         }
 
         testTCPButton.setOnClickListener {
-            testTCPClicked()
+            testTCPTapped()
         }
 
         testUDPButton.setOnClickListener {
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity()
         }
 
         stopVPNButton.setOnClickListener {
-            stopVPNButtonTapped()
+            stopVPNTapped()
         }
     }
 
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity()
 
     }
 
-    fun stopVPNButtonTapped() {
+    fun stopVPNTapped() {
         println("Stop VPN Clicked.")
         resultText.text = "Stop VPN Tapped."
 
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity()
         }
     }
 
-    fun testTCPClicked()
+    fun testTCPTapped()
     {
         println("Test TCP Clicked.")
 
