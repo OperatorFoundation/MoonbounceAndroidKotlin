@@ -63,12 +63,14 @@ class NetworkTests (val context: Context)
         {
             try
             {
+                val testString = "Catbus is TCP tops!"
+//                val testString = "ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ"
                 val transmissionConnection = TransmissionConnection(host, tcpEchoPort, ConnectionType.TCP, null)
                 println("🌙 TCP test: Transmission Connection created.")
-                transmissionConnection.write("ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ")
+                transmissionConnection.write(testString)
                 println("🌙 TCP test: Wrote some data...")
 
-                val result = transmissionConnection.read(5)
+                val result = transmissionConnection.read(testString.count())
 
                 if (result == null)
                 {
@@ -78,9 +80,17 @@ class NetworkTests (val context: Context)
                 else
                 {
                     val resultString = String(result)
-                    println("🌙 NetworkTests: TCP test got a response: $resultString")
+                    println("🌙 NetworkTests: TCP test got a response (${result.size} bytes)): $resultString")
 
-                    broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
+                    if (testString == resultString)
+                    {
+                        transmissionConnection.close()
+                        broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
+                    }
+                    else
+                    {
+                        broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+                    }
                 }
             }
             catch(error: Exception)
