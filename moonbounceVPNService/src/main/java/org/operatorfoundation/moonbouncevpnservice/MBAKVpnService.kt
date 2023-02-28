@@ -1,13 +1,22 @@
 package org.operatorfoundation.moonbouncevpnservice
 
+import android.annotation.TargetApi
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import androidx.annotation.RequiresApi
 import org.operatorfoundation.flower.*
-import org.operatorfoundation.transmission.*
+import org.operatorfoundation.transmission.ConnectionType
+import org.operatorfoundation.transmission.TransmissionConnection
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.InetAddress
@@ -47,6 +56,12 @@ class MBAKVpnService : VpnService()
         const val UDP_TEST_STATUS = "UDPTestPassed"
     }
 
+//    @Override public fun onBind(vpnService: VpnService?): IBinder? {
+//        return null
+//    }
+
+    @TargetApi(Build.VERSION_CODES.O) // O = Oreo = 8.0 = LVL 26
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN) // JELLY_BEAN = 4.1 = LVL 16
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
         print("****** onStartCommand called *******")
@@ -54,10 +69,25 @@ class MBAKVpnService : VpnService()
 
         getConnectInfoFromIntent(intent)
         connect()
-        //applicationContext.startForegroundService(intent)
-
-        //startForeground(1337, notification)
-
+        val notificationChannelId = "VPN Service Channel"
+        val channelName = "VPN Service Channel"
+        val chan = NotificationChannel(notificationChannelId,
+            channelName,
+            NotificationManager.IMPORTANCE_HIGH)
+        chan.lightColor = Color.BLUE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        val manager: NotificationManager =
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+        manager.createNotificationChannel(chan)
+        val notificationIntent = Intent(this, MBAKVpnService::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        val notification: Notification = Notification.Builder(this, notificationChannelId)
+            .setSmallIcon(R.drawable.crecent_moon)
+            .setContentTitle("VPN Service Channel")
+            .setContentText("VPN Tunnel is ON. Navigate to MBAK App to turn it off.")
+            .setContentIntent(pendingIntent)
+            .build()
+        startForeground(1337, notification)
         return START_STICKY
     }
 
@@ -341,17 +371,18 @@ class MBAKVpnService : VpnService()
         val maybeIP: String?
         val maybePort: Int
         val maybeDisallowedApp: String?
+        val maybeExcludeRoute: String?
 
         if (intent != null)
         {
             maybeIP = intent.getStringExtra(SERVER_IP)
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
             maybeDisallowedApp = intent.getStringExtra(DISALLOWED_APP)
-            excludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
+            maybeExcludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
             println("MBAKVpnService Server IP is: $maybeIP")
             println("MBAKVpnService Server Port is: $maybePort")
             println("MBAKVpnService Disallowed App is: $maybeDisallowedApp")
-            println("MBAKVpnService Exclude Route is: $excludeRoute")
+            println("MBAKVpnService Exclude Route is: $maybeExcludeRoute")
         }
         else
         {
@@ -387,6 +418,14 @@ class MBAKVpnService : VpnService()
         {
             println("MBAKVpnService: No Disallowed App was requested.")
         }
+        if (maybeExcludeRoute != null)
+        {
+            excludeRoute = maybeExcludeRoute
+        }
+        else
+        {
+            println("MBAKVpnService: No Exclude Route was requested.")
+        }
         return true
     }
 
@@ -418,11 +457,16 @@ class MBAKVpnService : VpnService()
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N) // N = Nougat = 7.0 = LVL 24
     override fun onDestroy()
     {
         println("✋ onDestroy called ✋")
         Log.d(TAG, "onDestroy Called")
         super.onDestroy()
+        //stopVPN()
+        //stopSelf()
+        //stopForeground(/* removeNotification = */ true)
+        //Toast.makeText(this, "Notification Service Service destroyed by user.", Toast.LENGTH_LONG).show()
         cleanUp()
     }
 
