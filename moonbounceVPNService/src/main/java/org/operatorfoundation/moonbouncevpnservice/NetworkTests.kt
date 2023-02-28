@@ -54,6 +54,14 @@ class NetworkTests (val context: Context)
         }
     }
 
+    fun testMultiPacketOut()
+    {
+        val exceedMTUSize = 2500
+        val someBytes = ByteArray(exceedMTUSize)
+
+        // TODO: Make tcpTest take a byte array to send
+    }
+
     fun tcpTest()
     {
         println("🌙 Launching TCP Test")
