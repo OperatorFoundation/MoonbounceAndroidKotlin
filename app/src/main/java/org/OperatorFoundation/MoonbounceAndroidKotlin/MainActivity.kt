@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import org.operatorfoundation.moonbouncevpnservice.*
 
 class MainActivity : AppCompatActivity()
@@ -65,17 +66,24 @@ class MainActivity : AppCompatActivity()
 
         ipEditText = findViewById<EditText>(R.id.server_address)
         val chooseDisallowAppsButton = findViewById<Button>(R.id.choose_apps)
-        val connectButton = findViewById<Button>(R.id.connect_button)
+        val vpnConnectedSwitchCompat = findViewById<SwitchCompat>(R.id.connect_switch)
+        vpnConnectedSwitchCompat.isChecked = false
         val testTCPButton = findViewById<Button>(R.id.test_TCP)
         val testUDPButton = findViewById<Button>(R.id.test_UDP)
-        val stopVPNButton = findViewById<Button>(R.id.stopVPN_button)
 
         chooseDisallowAppsButton.setOnClickListener {
             chooseDisallowedApps()
         }
 
-        connectButton.setOnClickListener {
-            connectTapped()
+        vpnConnectedSwitchCompat.setOnCheckedChangeListener {
+                _, isChecked ->
+            if (isChecked) {
+                vpnConnectedSwitchCompat.text = "On"
+                connectTapped()
+            } else {
+                vpnConnectedSwitchCompat.text = "Off"
+                stopVPNTapped()
+            }
         }
 
         testTCPButton.setOnClickListener {
@@ -84,10 +92,6 @@ class MainActivity : AppCompatActivity()
 
         testUDPButton.setOnClickListener {
             testUDPTapped()
-        }
-
-        stopVPNButton.setOnClickListener {
-            stopVPNTapped()
         }
     }
 
@@ -119,7 +123,6 @@ class MainActivity : AppCompatActivity()
     fun stopVPNTapped() {
         println("Stop VPN Clicked.")
         resultText.text = "Stop VPN Tapped."
-
         stopService(vpnServiceIntent)
     }
 
@@ -135,6 +138,11 @@ class MainActivity : AppCompatActivity()
         else
         {
             val serviceStopped = super.stopService(name)
+
+            //stopVPN()
+            //stopSelf()
+            //topForeground(/* removeNotification = */ true)
+            // TODO: We are reaching these functions, but the service does not stop. Work on debugging.
             println("$name Service Stopped: $serviceStopped")
             return serviceStopped
         }
