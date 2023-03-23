@@ -454,7 +454,6 @@ class MBAKVpnService : VpnService()
         flowerConnection?.connection?.close()
         outputStream?.close()
         inputStream?.close()
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N) // N = Nougat = 7.0 = LVL 24

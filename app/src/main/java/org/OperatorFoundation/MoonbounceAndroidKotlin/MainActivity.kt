@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity()
 {
     val TAG = "MainActivity"
     val networkTests = NetworkTests(this)
-
+    val mbakVpnService = MBAKVpnService()
     var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
@@ -139,8 +139,8 @@ class MainActivity : AppCompatActivity()
         {
             val serviceStopped = super.stopService(name)
 
-            //stopVPN()
-            //stopSelf()
+//            stopVPN()
+            mbakVpnService.stopVPN()
             //topForeground(/* removeNotification = */ true)
             // TODO: We are reaching these functions, but the service does not stop. Work on debugging.
             println("$name Service Stopped: $serviceStopped")
