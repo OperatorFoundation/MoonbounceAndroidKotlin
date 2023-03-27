@@ -1,5 +1,6 @@
 package org.operatorfoundation.moonbouncevpnservice
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 
@@ -7,7 +8,7 @@ class MoonbounceKotlin(val context: Context, var ipAddress: String, var serverPo
 {
     var vpnServiceIntent: Intent? = null
 
-    fun startVPN()
+    fun startVPN(): ComponentName?
     {
         if (vpnServiceIntent == null)
         {
@@ -33,11 +34,11 @@ class MoonbounceKotlin(val context: Context, var ipAddress: String, var serverPo
         }
 
         // Start the VPN Service
-        context.startService(vpnServiceIntent)
+        return context.startService(vpnServiceIntent)
     }
 
-    fun stopVPN()
+    fun stopVPN(): Boolean
     {
-        context.stopService(vpnServiceIntent)
+        return context.stopService(vpnServiceIntent)
     }
 }

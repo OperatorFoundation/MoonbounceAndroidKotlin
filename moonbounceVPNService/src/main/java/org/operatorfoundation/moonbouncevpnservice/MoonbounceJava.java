@@ -1,5 +1,6 @@
 package org.operatorfoundation.moonbouncevpnservice;
 
+import android.content.ComponentName;
 import android.content.Context;
 
 public class MoonbounceJava
@@ -10,13 +11,13 @@ public class MoonbounceJava
     {
         moonbounceKotlin = new MoonbounceKotlin(context, serverIP, serverPort, disallowedApp, excludeIP);
     }
-    public void startVPN()
+    public ComponentName startVPN()
     {
-        moonbounceKotlin.startVPN();
+        return moonbounceKotlin.startVPN();
     }
 
-    public void stopVPN()
+    public Boolean stopVPN()
     {
-        moonbounceKotlin.stopVPN();
+        return moonbounceKotlin.stopVPN();
     }
 }
