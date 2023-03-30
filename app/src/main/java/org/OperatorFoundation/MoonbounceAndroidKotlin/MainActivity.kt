@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -123,27 +124,29 @@ class MainActivity : AppCompatActivity()
     fun stopVPNTapped() {
         println("Stop VPN Clicked.")
         resultText.text = "Stop VPN Tapped."
+
         stopService(vpnServiceIntent)
     }
+
+
 
     override fun stopService(name: Intent?): Boolean
     {
         println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
 
-        if (name == null)
+        if (vpnServiceIntent == null)
         {
-            print("There is no service to stop.")
+            print("There is no VPN service to stop.")
             return false
         }
         else
         {
-            val serviceStopped = super.stopService(name)
-
+            val serviceStopped = super.stopService(vpnServiceIntent)
 //            stopVPN()
             mbakVpnService.stopVPN()
             //topForeground(/* removeNotification = */ true)
             // TODO: We are reaching these functions, but the service does not stop. Work on debugging.
-            println("$name Service Stopped: $serviceStopped")
+            print("$name Service Stopped: $serviceStopped")
             return serviceStopped
         }
     }

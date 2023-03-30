@@ -11,8 +11,10 @@ import android.graphics.Color
 import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
+import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.ConnectionType
@@ -56,9 +58,10 @@ class MBAKVpnService : VpnService()
         const val UDP_TEST_STATUS = "UDPTestPassed"
     }
 
-//    @Override public fun onBind(vpnService: VpnService?): IBinder? {
-//        return null
-//    }
+    @Override public fun onBind(vpnService: VpnService): IBinder? {
+        Log.d(TAG, "onBind Called")
+        return null
+    }
 
     @TargetApi(Build.VERSION_CODES.O) // O = Oreo = 8.0 = LVL 26
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN) // JELLY_BEAN = 4.1 = LVL 16
@@ -91,6 +94,7 @@ class MBAKVpnService : VpnService()
         return START_STICKY
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     fun connect()
     {
         thread(start = true)
@@ -437,11 +441,13 @@ class MBAKVpnService : VpnService()
         sendBroadcast(intent)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     fun stopVPN()
     {
         println("✋ Stopping VPN  ✋")
         println("****** stopVPN called ******")
         Log.d(TAG, "onStopVPN Called")
+        stopForeground(STOP_FOREGROUND_DETACH)
         cleanUp()
         stopSelf()
     }
@@ -462,13 +468,14 @@ class MBAKVpnService : VpnService()
         println("✋ onDestroy called ✋")
         Log.d(TAG, "onDestroy Called")
         super.onDestroy()
-        //stopVPN()
-        //stopSelf()
-        //stopForeground(/* removeNotification = */ true)
-        //Toast.makeText(this, "Notification Service Service destroyed by user.", Toast.LENGTH_LONG).show()
+        stopForeground(STOP_FOREGROUND_DETACH)
         cleanUp()
+        stopVPN()
+        stopSelf()
+        Toast.makeText(this, "Notification Service Service destroyed by user.", Toast.LENGTH_LONG).show()
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onRevoke()
     {
         println("✋ onRevoke called ✋")
