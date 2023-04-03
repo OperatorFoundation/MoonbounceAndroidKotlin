@@ -13,11 +13,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MoonbounceAndroidKotlin" >
-    <receiver
-        android:name="org.operatorfoundation.moonbounceAndroidKotlin.StatusReceiver"
-        android:enabled="true"
-        android:exported="true">
-    </receiver>
+
+        <receiver
+            android:name="org.operatorfoundation.moonbounceAndroidKotlin.StatusReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true" >
@@ -37,6 +39,7 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
+
     </application>
 
 </manifest>

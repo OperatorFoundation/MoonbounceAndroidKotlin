@@ -1,12 +1,19 @@
 package org.operatorfoundation.moonbouncevpnservice
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
+import android.content.*
 
 class MoonbounceKotlin(val context: Context, var ipAddress: String, var serverPort: Int, var disallowedApp: String? = null, var excludeRoute: String? = null)
 {
     var vpnServiceIntent: Intent? = null
+    var vpnStatusReceiver: BroadcastReceiver
+
+    init {
+        val filter = IntentFilter()
+        filter.addAction(MBAKVpnService.vpnStatusNotification)
+        vpnStatusReceiver = MoonbouncePluginStatusReceiver()
+
+        context.registerReceiver(vpnStatusReceiver, filter)
+    }
 
     fun startVPN(): ComponentName?
     {
