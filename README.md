@@ -11,17 +11,19 @@ MBAK is a graphical user interface for configuring a VPN with Pluggable Transpor
 
 ### Requirements
 
-| Platform | Minimum Swift Version | Status |
+| Platform | Minimum Android Version | Status |
 | --- | --- | --- |
-| Android 4 | API 30 | Building But Unsupported |
+| Android 7.0 | API 24 | Building But Unsupported |
+
+| Platform | Maximum Android Version | Status |
+| --- | --- | --- |
+| Android 12.0 | API 31 | Building But Unsupported |
 
 ### Installation
 
 ```
 git clone git@github.com:OperatorFoundation/MoonbounceAndroidKotlin.git 
 ```
-
-***(NOTE: It is recommended that you use the SSH option when cloning this repository.)***
 
 ### Developer Instructions
 
