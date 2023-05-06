@@ -315,7 +315,7 @@ class MBAKVpnService : VpnService()
 
         if (messageReceived == null)
         {
-            println("MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
+            println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
             stopVPN()
             return
         }
@@ -331,6 +331,7 @@ class MBAKVpnService : VpnService()
                     val messageData = messageContent.bytes
                     println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: writing ${messageData.size} bytes to outputStream.")
                     vpnOutputStream.write(messageData)
+                    println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: finished writing ${messageData.size} bytes to outputStream.")
                 }
 
                 else ->
