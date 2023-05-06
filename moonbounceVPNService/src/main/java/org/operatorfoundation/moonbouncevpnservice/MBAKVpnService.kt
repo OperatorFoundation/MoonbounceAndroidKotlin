@@ -21,6 +21,7 @@ import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.InetAddress
 import kotlin.concurrent.thread
 
@@ -91,6 +92,13 @@ class MBAKVpnService : VpnService()
             .setContentIntent(pendingIntent)
             .build()
         startForeground(1337, notification)
+        //TODO: Revisit the following if statement.
+//        if (intent != null) {
+//            if (intent.getAction().equals("StopService")) {
+//                stopForeground(true)
+//                stopSelf()
+//            }
+//        }
         return START_STICKY
     }
 
@@ -447,19 +455,40 @@ class MBAKVpnService : VpnService()
         println("✋ Stopping VPN  ✋")
         println("****** stopVPN called ******")
         Log.d(TAG, "onStopVPN Called")
-        stopForeground(STOP_FOREGROUND_DETACH)
         cleanUp()
+        STOP_FOREGROUND_DETACH
+        println("*****Reached the line after STOP_FOREGROUND_DETACH*******")
         stopSelf()
+        println("**********Reached the line past stopSelf() in MBAKVpnService.kt")
     }
 
     fun cleanUp()
     {
         println("****** cleanUp called *******")
         Log.d(TAG, "cleanUp Called")
-        parcelFileDescriptor?.close()
-        flowerConnection?.connection?.close()
-        outputStream?.close()
-        inputStream?.close()
+        try {
+            parcelFileDescriptor?.close()
+        } catch (ex: IOException) {
+            Log.e(TAG, "parcelFileDescriptor.close()", ex)
+        }
+        try {
+            flowerConnection?.connection?.close()
+        } catch (ex:IOException) {
+            Log.e(TAG, "flowerConnection.close()", ex)
+        }
+        try {
+            outputStream?.close()
+        } catch (ex:IOException) {
+            Log.e(TAG, "outputStream.close()", ex)
+        }
+        try {
+            inputStream?.close()
+        } catch (ex:IOException) {
+            Log.e(TAG, "inputStream.close()", ex)
+        }
+        STOP_FOREGROUND_DETACH
+        stopSelf()
+        println("✋ left cleanUp() function ✋")
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N) // N = Nougat = 7.0 = LVL 24

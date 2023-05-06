@@ -3,4 +3,5 @@
     <string name="notification_title">VPN Service is ON</string>
     <string name="notification_message">VPN Service is ON</string>
     <string name="ticker_text">Ticker Text</string>
+    <string name="app_name">Moonbounce VPN Service</string>
 </resources>
