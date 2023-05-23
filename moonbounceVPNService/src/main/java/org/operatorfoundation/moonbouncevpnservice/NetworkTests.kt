@@ -65,14 +65,14 @@ class NetworkTests (val context: Context)
     fun tcpTest()
     {
         println("🌙 Launching TCP Test")
-        println("host and port: $host: $tcpEchoPort")
+        println("\uD83C\uDF19 host and port: $host: $tcpEchoPort")
 
         thread(start = true)
         {
             try
             {
                 val testString = "Catbus is TCP tops!"
-//                val testString = "ᓚᘏᗢ Catbus is TCP tops! ᓚᘏᗢ"
+
                 val transmissionConnection = TransmissionConnection(host, tcpEchoPort, ConnectionType.TCP, null)
                 println("🌙 TCP test: Transmission Connection created.")
                 transmissionConnection.write(testString)
@@ -91,6 +91,53 @@ class NetworkTests (val context: Context)
                     println("🌙 NetworkTests: TCP test got a response (${result.size} bytes)): $resultString")
 
                     if (testString == resultString)
+                    {
+                        transmissionConnection.close()
+                        broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
+                    }
+                    else
+                    {
+                        broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+                    }
+                }
+            }
+            catch(error: Exception)
+            {
+                println("🌙 NetworkTests: TCP test failed to make a connection. $error")
+                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+            }
+        }
+    }
+
+    fun tcpTest2k()
+    {
+        println("🌙 Launching TCP Test")
+        println("\uD83C\uDF19 host and port: $host: $tcpEchoPort")
+
+        thread(start = true)
+        {
+            try
+            {
+                val testData = ByteArray(2000) { 'A'.code.toByte() }
+
+                val transmissionConnection = TransmissionConnection(host, tcpEchoPort, ConnectionType.TCP, null)
+                println("🌙 TCP test: Transmission Connection created.")
+
+                transmissionConnection.write(testData)
+                println("🌙 TCP test: Wrote some data...")
+
+                val result = transmissionConnection.read(testData.count())
+
+                if (result == null)
+                {
+                    println("🌙 TCP test tried to read, but got no response")
+                    broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+                }
+                else
+                {
+                    println("🌙 NetworkTests: TCP test got a response (${result.size} bytes)): $result")
+
+                    if (testData.contentEquals(result))
                     {
                         transmissionConnection.close()
                         broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
