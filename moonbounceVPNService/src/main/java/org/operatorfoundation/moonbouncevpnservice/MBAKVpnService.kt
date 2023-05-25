@@ -84,7 +84,7 @@ class MBAKVpnService : VpnService()
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
         manager.createNotificationChannel(chan)
         val notificationIntent = Intent(this, MBAKVpnService::class.java)
-        // Do we want the flag to be 0? If so, it crashes SDK 30+
+        // FIXME: flag needs to be set properly, a 0 causes SDK 30+ to crash
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
