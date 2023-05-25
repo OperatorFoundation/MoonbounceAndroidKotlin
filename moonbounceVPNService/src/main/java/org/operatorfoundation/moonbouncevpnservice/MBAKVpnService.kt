@@ -84,6 +84,7 @@ class MBAKVpnService : VpnService()
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
         manager.createNotificationChannel(chan)
         val notificationIntent = Intent(this, MBAKVpnService::class.java)
+
         // FIXME: flag needs to be set properly, a 0 causes SDK 30+ to crash
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -91,6 +92,7 @@ class MBAKVpnService : VpnService()
             notificationIntent,
             0
         )
+
         val notification: Notification = Notification.Builder(this, notificationChannelId)
             .setSmallIcon(R.drawable.crecent_moon)
             .setContentTitle("VPN Service Channel")
