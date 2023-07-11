@@ -399,6 +399,7 @@ class MBAKVpnService : VpnService()
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
             maybeDisallowedApp = intent.getStringExtra(DISALLOWED_APP)
             maybeExcludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
+
             println("MBAKVpnService Server IP is: $maybeIP")
             println("MBAKVpnService Server Port is: $maybePort")
             println("MBAKVpnService Disallowed App is: $maybeDisallowedApp")
@@ -460,19 +461,16 @@ class MBAKVpnService : VpnService()
     @RequiresApi(Build.VERSION_CODES.N)
     fun stopVPN()
     {
-        println("✋ Stopping VPN  ✋")
-        println("****** stopVPN called ******")
-        Log.d(TAG, "onStopVPN Called")
+        println("✋ **MBAKVpnService.kt START OF stopVPN()**  ✋")
         cleanUp()
         STOP_FOREGROUND_DETACH
-        println("*****Reached the line after STOP_FOREGROUND_DETACH*******")
         stopSelf()
-        println("**********Reached the line past stopSelf() in MBAKVpnService.kt")
+        println("✋ **MBAKVpnService.kt END OF stopVPN()** ✋")
     }
 
     fun cleanUp()
     {
-        println("****** cleanUp called *******")
+        println("✋ cleanUp called ✋")
         Log.d(TAG, "cleanUp Called")
         try {
             parcelFileDescriptor?.close()
@@ -506,7 +504,6 @@ class MBAKVpnService : VpnService()
         Log.d(TAG, "onDestroy Called")
         super.onDestroy()
         stopForeground(STOP_FOREGROUND_DETACH)
-        cleanUp()
         stopVPN()
         stopSelf()
         Toast.makeText(this, "Notification Service Service destroyed by user.", Toast.LENGTH_LONG).show()
@@ -520,6 +517,5 @@ class MBAKVpnService : VpnService()
         super.onRevoke()
 
         stopVPN()
-        cleanUp()
     }
 }
