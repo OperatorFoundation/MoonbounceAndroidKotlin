@@ -208,7 +208,7 @@ class MainActivity : AppCompatActivity()
         if (ipAddress.isEmpty() || ipAddress.isBlank())
         {
             println("A valid server IP and port are required to enable VPN services.")
-            resultText.text = "A valid server IP are required to enable VPN services."
+            resultText.text = "A valid server IP and port are required to enable VPN services."
             vpnConnectedSwitchCompat.isChecked = false
             return
         }
