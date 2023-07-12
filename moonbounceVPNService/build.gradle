@@ -5,6 +5,8 @@ plugins {
 
 android {
     compileSdk 33
+    namespace = "org.operatorfoundation.moonbouncevpnservice"
+
 
     defaultConfig {
         minSdk 26
