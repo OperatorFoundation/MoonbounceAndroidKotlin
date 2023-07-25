@@ -14,8 +14,8 @@ import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.udpT
 class NetworkTests (val context: Context)
 {
     var host: String = "0.0.0.0"
-    var udpEchoPort = 2233
-    var tcpEchoPort = 2234
+    var udpEchoPort = 7
+    var tcpEchoPort = 7
 
     fun udpTest()
     {
