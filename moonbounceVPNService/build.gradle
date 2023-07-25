@@ -35,7 +35,6 @@ android {
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'com.github.OperatorFoundation:FlowerAndroid:1.0.23'
     implementation 'com.github.OperatorFoundation:TransmissionAndroid:1.2.2'
 
     testImplementation 'junit:junit:4.13.2'

@@ -16,7 +16,6 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import org.operatorfoundation.flower.*
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
 import java.io.FileInputStream
@@ -33,9 +32,10 @@ const val EXCLUDE_ROUTE = "ExcludeRoute"
 
 class MBAKVpnService : VpnService()
 {
+    val sizeInBits = 32
     val TAG = "MBAKVpnService"
     var parcelFileDescriptor: ParcelFileDescriptor? = null
-    var flowerConnection: FlowerConnection? = null
+    var transmissionConnection: TransmissionConnection? = null
     var inputStream: FileInputStream? = null
     var outputStream: FileOutputStream? = null
     var transportServerIP = ""
@@ -57,11 +57,6 @@ class MBAKVpnService : VpnService()
         const val VPN_CONNECTED_STATUS = "VpnConnected"
         const val TCP_TEST_STATUS = "TCPTestPassed"
         const val UDP_TEST_STATUS = "UDPTestPassed"
-    }
-
-    @Override public fun onBind(vpnService: VpnService): IBinder? {
-        Log.d(TAG, "onBind Called")
-        return null
     }
 
     @TargetApi(Build.VERSION_CODES.O) // O = Oreo = 8.0 = LVL 26
@@ -99,13 +94,7 @@ class MBAKVpnService : VpnService()
             .setContentIntent(pendingIntent)
             .build()
         startForeground(1337, notification)
-        //TODO: Revisit the following if statement.
-//        if (intent != null) {
-//            if (intent.getAction().equals("StopService")) {
-//                stopForeground(true)
-//                stopSelf()
-//            }
-//        }
+
         return START_STICKY
     }
 
@@ -116,7 +105,7 @@ class MBAKVpnService : VpnService()
         {
             try
             {
-                val transmissionConnection = TransmissionConnection(
+                this.transmissionConnection = TransmissionConnection(
                     transportServerIP,
                     transportServerPort,
                     ConnectionType.TCP,
@@ -126,10 +115,14 @@ class MBAKVpnService : VpnService()
                 // Data sent through this socket will go directly to the underlying network, so its traffic will not be forwarded through the VPN
                 // A VPN tunnel should protect itself if its destination is covered by VPN routes.
                 // Otherwise its outgoing packets will be sent back to the VPN interface and cause an infinite loop.
-                protect(transmissionConnection.tcpConnection!!)
 
-                flowerConnection = FlowerConnection(transmissionConnection, null, true, true)
-                parcelFileDescriptor = handshake(flowerConnection!!)
+                if (this.transmissionConnection == null)
+                {
+                    throw Error("Failed to create a connection to the server.")
+                }
+
+                protect(transmissionConnection!!.tcpConnection!!)
+                parcelFileDescriptor = handshake()
 
                 if (parcelFileDescriptor == null)
                 {
@@ -169,72 +162,25 @@ class MBAKVpnService : VpnService()
         }
     }
 
-    fun handshake(flowerConnection: FlowerConnection): ParcelFileDescriptor?
+    fun handshake(): ParcelFileDescriptor?
     {
-        val messageData = IPRequestV4().data
-        val ipRequest = Message(messageData)
-
-        println("\n🌙 MBAKVpnService.handshake: is attempting to write a 🌻 message...")
-        flowerConnection.writeMessage(ipRequest)
-
-        println("\n🌙 MBAKVpnService.handshake: is attempting to read a 🌻 message...")
-        val flowerResponse = flowerConnection.readMessage()
-
-        if (flowerResponse == null)
-        {
-            println("🌙 MBAKVpnService: Received a null response from our call to readMessage.")
-            return null
-        }
-        else
-        {
-            when(flowerResponse.messageType)
-            {
-                MessageType.IPAssignV4Type ->
-                {
-                    println("\n🌙 MBAKVpnService.handshake: Got a 🌻 IPV4 Assignment!!")
-                    val messageContent = flowerResponse.content as IPAssignV4
-                    val ipv4AssignmentString = messageContent.inet4Address.hostAddress
-
-                    if (ipv4AssignmentString == null)
-                    {
-                        println("🌙 MBAKVpnService.handshake: Failed to get the ipv4Assignment String")
-                        return null
-                    }
-                    else
-                    {
-                        println("🌙 MBAKVpnService.handshake: ipv4AssignmentString - $ipv4AssignmentString")
-                        // TODO: Go up the chain until I find a function that can access user input.
-                        return prepareBuilder(ipv4AssignmentString)
-                    }
-                }
-                else ->
-                {
-                    println("🌙 MBAKVpnService.handshake: Our first response from the server was not an ipv4 assignment.")
-                    return null
-                }
-            }
-        }
+        return prepareBuilder("10.0.0.1")
     }
 
     fun runVPNtoServer()
     {
-
         while (true)
         {
             // Leave the loop if the socket is closed
-            if (flowerConnection?.connection?.tcpConnection != null && flowerConnection!!.connection.tcpConnection!!.isClosed)
+            if (transmissionConnection?.tcpConnection != null && transmissionConnection!!.tcpConnection!!.isClosed)
             {
                 break
             }
-            else if (flowerConnection?.connection?.udpConnection != null && flowerConnection!!.connection.udpConnection!!.isClosed)
-            {
-                break
-            }
-            else if (flowerConnection?.connection != null && inputStream != null)
+            else if (transmissionConnection != null && inputStream != null)
             {
                 try
                 {
-                    vpnToServer(inputStream!!, flowerConnection!!)
+                    vpnToServer(inputStream!!)
                 }
                 catch (vpnToServerError: Exception)
                 {
@@ -250,7 +196,7 @@ class MBAKVpnService : VpnService()
         }
     }
 
-    fun vpnToServer(vpnInputStream: FileInputStream, connection: FlowerConnection)
+    fun vpnToServer(vpnInputStream: FileInputStream)
     {
         try {
             var readBuffer = ByteArray(2048)
@@ -264,19 +210,24 @@ class MBAKVpnService : VpnService()
             else
             {
                 println("🌖 MoonbounceAndroid.vpnToServer: inputStream.readBytes() received ${numberOfBytesReceived} bytes")
-                val messageContent = IPDataV4(readBuffer)
-                val message = Message(messageContent.data)
-
-                try
+                if (transmissionConnection == null)
                 {
-                    println("🌖 MoonbounceAndroid.vpnToServer: calling connection.writeMessage()")
-                    connection.writeMessage(message)
-                    println("🌖 MoonbounceAndroid.vpnToServer: returned from connection.writeMessage()")
+                    println("vpnToServer(): Transmission connection is closed")
+                    return
                 }
-                catch (vpnToServerWriteError: Exception)
+                else
                 {
-                    println("\uD83C\uDF16 MoonbounceAndroid.vpnToServer: vpnToServerWriteError")
-                    throw vpnToServerWriteError
+                    try
+                    {
+                        println("🌖 MoonbounceAndroid.vpnToServer: calling connection.writeMessage()")
+                        transmissionConnection!!.writeWithLengthPrefix(readBuffer, sizeInBits)
+                        println("🌖 MoonbounceAndroid.vpnToServer: returned from connection.writeMessage()")
+                    }
+                    catch (vpnToServerWriteError: Exception)
+                    {
+                        println("\uD83C\uDF16 MoonbounceAndroid.vpnToServer: vpnToServerWriteError")
+                        throw vpnToServerWriteError
+                    }
                 }
             }
         }
@@ -292,19 +243,15 @@ class MBAKVpnService : VpnService()
         while(true)
         {
             // Leave loop if the socket is closed
-            if (flowerConnection?.connection?.tcpConnection != null && flowerConnection!!.connection.tcpConnection!!.isClosed)
+            if (transmissionConnection?.tcpConnection != null && transmissionConnection!!.tcpConnection!!.isClosed)
             {
                 break
             }
-            else if (flowerConnection?.connection?.udpConnection != null && flowerConnection!!.connection.udpConnection!!.isClosed)
-            {
-                break
-            }
-            else if (flowerConnection?.connection != null && outputStream != null)
+            else if (transmissionConnection != null && outputStream != null)
             {
                 try
                 {
-                    serverToVPN(outputStream!!, flowerConnection!!)
+                    serverToVPN(outputStream!!, transmissionConnection!!)
                 }
                 catch (serverToVPNError: Exception)
                 {
@@ -316,11 +263,11 @@ class MBAKVpnService : VpnService()
         }
     }
 
-    fun serverToVPN(vpnOutputStream: FileOutputStream, connection: FlowerConnection)
+    fun serverToVPN(vpnOutputStream: FileOutputStream, connection: TransmissionConnection)
     {
-        val messageReceived = connection.readMessage()
+        val messageData = connection.readWithLengthPrefix(sizeInBits)
 
-        if (messageReceived == null)
+        if (messageData == null)
         {
             println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
             stopVPN()
@@ -328,25 +275,9 @@ class MBAKVpnService : VpnService()
         }
         else
         {
-            println("🌖 MoonbounceAndroid.serverToVPN: inputStream.readBytes() received ${messageReceived.data.size} bytes")
-
-            when(messageReceived.messageType)
-            {
-                MessageType.IPDataV4Type ->
-                {
-                    val messageContent = messageReceived.content as IPDataV4
-                    val messageData = messageContent.bytes
-                    println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: writing ${messageData.size} bytes to outputStream.")
-                    vpnOutputStream.write(messageData)
-                    println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: finished writing ${messageData.size} bytes to outputStream.")
-                }
-
-                else ->
-                {
-                    println("Received an unsupported Flower message type: ${messageReceived.messageType}")
-                    return
-                }
-            }
+            println("🌖 MoonbounceAndroid.serverToVPN: inputStream.readBytes() received ${messageData.size} bytes")
+            vpnOutputStream.write(messageData)
+            println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: finished writing ${messageData.size} bytes to outputStream.")
         }
     }
 
@@ -478,7 +409,7 @@ class MBAKVpnService : VpnService()
             Log.e(TAG, "parcelFileDescriptor.close()", ex)
         }
         try {
-            flowerConnection?.connection?.close()
+            transmissionConnection?.close()
         } catch (ex:IOException) {
             Log.e(TAG, "flowerConnection.close()", ex)
         }
