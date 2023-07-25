@@ -9,6 +9,7 @@ import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.TCP_
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.UDP_TEST_STATUS
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.tcpTestNotification
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.udpTestNotification
+import org.operatorfoundation.transmission.Transmission.Companion.toHexString
 
 
 class NetworkTests (val context: Context)
@@ -25,17 +26,18 @@ class NetworkTests (val context: Context)
         {
             try
             {
+                val udpTestString = "ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ"
+                println("🌙 Sending UDP test data (${udpTestString.toByteArray().size} bytes): ${udpTestString.toByteArray().toHexString()}")
                 val transmissionConnection =
                     TransmissionConnection(host, udpEchoPort, ConnectionType.UDP, null)
-                transmissionConnection.write("ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ")
+                transmissionConnection.write(udpTestString)
+                println("🌙 NetworkTests: UDP returned from write.")
 
-                val result = transmissionConnection.read(68)
-                
+                val result = transmissionConnection.read(35)
+                println("🌙 NetworkTests: UDP returned from read.")
+
                 if (result == null)
                 {
-                    // TODO: We are getting here before the write has finished,
-                    //  so even if we do eventually get the correct response
-                    //  the test has already sent a failure notification
                     println("🌙 NetworkTests: UDP test tried to read, but got no response")
                     broadcastStatus(udpTestNotification, UDP_TEST_STATUS, false)
                 }
