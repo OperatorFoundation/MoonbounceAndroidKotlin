@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -20,19 +19,22 @@ class MainActivity : AppCompatActivity()
 {
     val TAG = "MainActivity"
     val networkTests = NetworkTests(this)
-    val mbakVpnService = MBAKVpnService()
-//    var vpnServiceIntent: Intent? = null
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var disallowedApp: String? = null
     var excludeRoute: String? = null
     var statusReceiver: BroadcastReceiver? = null
-    var isChecked = false
 
-    lateinit var ipEditText: TextView
+    lateinit var ipEditText: EditText
+    lateinit var portEditText: EditText
+    lateinit var disallowedAppEditText: EditText
+    lateinit var excludeRouteEditText: EditText
     lateinit var resultText: TextView
-    lateinit var vpnConnectedSwitchCompat: SwitchCompat
-    lateinit var vpnServiceIntent: Intent
+    lateinit var chooseDisallowAppsButton: Button
+    lateinit var testTCPButton: Button
+    lateinit var testUDPButton: Button
+    lateinit var vpnConnectedSwitch: SwitchCompat
+    lateinit var moonbounceVPNIntent: Intent
 
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -58,36 +60,31 @@ class MainActivity : AppCompatActivity()
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate Called")
         setContentView(R.layout.activity_main)
-
         configureReceiver()
 
-//        if (vpnServiceIntent == null)
-//        {
-//            vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-//        }
+        moonbounceVPNIntent = Intent(this, MBAKVpnService::class.java)
 
-        vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-
-        resultText = findViewById<TextView>(R.id.resultText)
-
-        ipEditText = findViewById<EditText>(R.id.server_address)
-        val chooseDisallowAppsButton = findViewById<Button>(R.id.choose_apps)
-        vpnConnectedSwitchCompat = findViewById(R.id.connect_switch)
-        vpnConnectedSwitchCompat.isChecked = false
-        val testTCPButton = findViewById<Button>(R.id.test_TCP)
-        val testUDPButton = findViewById<Button>(R.id.test_UDP)
+        resultText = findViewById(R.id.resultText)
+        ipEditText = findViewById(R.id.server_address)
+        portEditText = findViewById(R.id.server_port)
+        disallowedAppEditText = findViewById(R.id.disallowed_app)
+        excludeRouteEditText = findViewById(R.id.exclude_route)
+        chooseDisallowAppsButton = findViewById(R.id.installed_apps)
+        testTCPButton = findViewById(R.id.test_TCP)
+        testUDPButton = findViewById(R.id.test_UDP)
+        vpnConnectedSwitch = findViewById(R.id.connect_switch)
 
         chooseDisallowAppsButton.setOnClickListener {
             chooseDisallowedApps()
         }
 
-        vpnConnectedSwitchCompat.setOnCheckedChangeListener {
+        vpnConnectedSwitch.setOnCheckedChangeListener {
                 _, isChecked ->
             if (isChecked) {
 //                vpnConnectedSwitchCompat.text = "VPN connected"
                 connectTapped()
             } else {
-                vpnConnectedSwitchCompat.text = "Connect VPN"
+                vpnConnectedSwitch.text = "Connect VPN"
 //                stopVPNTapped()
             }
         }
@@ -112,10 +109,12 @@ class MainActivity : AppCompatActivity()
         registerReceiver(statusReceiver, filter)
     }
 
-    fun chooseDisallowedApps() {
+    // Use this to see a printed list of applications with the ID needed to disallow them from the tunnel
+    private fun chooseDisallowedApps()
+    {
         val appManager = AppManager(applicationContext)
         val installedApps = appManager.getApps()
-        println("Installed app information:")
+        println("Installed applications:")
         for (app in installedApps)
         {
             println("\napp name - ${app.name}")
@@ -123,7 +122,6 @@ class MainActivity : AppCompatActivity()
             println("is a system app - ${app.isSystem}")
             println("has an icon - ${app.icon != null}\n")
         }
-
     }
 
 //    fun stopVPNTapped() {
@@ -167,13 +165,12 @@ class MainActivity : AppCompatActivity()
 //            mbakVpnService.stopVPN()
 //            vpnConnectedSwitchCompat.isChecked = false
 //            //topForeground(/* removeNotification = */ true)
-//            // TODO: We are reaching these functions, but the service does not stop. Work on debugging.
 //            print("$name Service Stopped: $serviceStopped")
 //            return serviceStopped
 //        }
 //    }
 
-    fun testTCPTapped()
+    private fun testTCPTapped()
     {
         println("Test TCP Clicked.")
 
@@ -182,7 +179,7 @@ class MainActivity : AppCompatActivity()
         networkTests.tcpTest2k()
     }
 
-    fun testUDPTapped()
+    private fun testUDPTapped()
     {
         println("Test UDP Clicked.")
 
@@ -195,41 +192,33 @@ class MainActivity : AppCompatActivity()
     {
         println("Connect tapped.")
         ipAddress = ipEditText.text.toString()
-
-        val portEditText = findViewById<EditText>(R.id.server_port)
-        val serverPortString = portEditText.text.toString()
-
-        val disallowedAppEditText = findViewById<EditText>(R.id.disallowed_app)
+        serverPort = portEditText.text.toString().toInt()
         disallowedApp = disallowedAppEditText.text.toString()
-
-        val excludeRouteEditText = findViewById<EditText>(R.id.exclude_route)
         excludeRoute = excludeRouteEditText.text.toString()
 
         if (ipAddress.isEmpty() || ipAddress.isBlank())
         {
             println("A valid server IP and port are required to enable VPN services.")
             resultText.text = "A valid server IP and port are required to enable VPN services."
-            vpnConnectedSwitchCompat.isChecked = false
+            vpnConnectedSwitch.isChecked = false
             return
         }
         else
         {
             try
             {
-                serverPort = serverPortString.toInt()
-
                 // VpnService.prepare() to ask for permission (when needed).
                 val vpnPrepareIntent = VpnService.prepare(applicationContext)
                 if (vpnPrepareIntent != null) // The user has not yet given the necessary permissions
                 {
                     // Launches an activity to request permission
                     resultLauncher.launch(vpnPrepareIntent)
-                    vpnConnectedSwitchCompat.isChecked = false
+                    vpnConnectedSwitch.isChecked = false
                 }
                 else // The user has already given permission, and the VPN Service is already prepared
                 {
                     startVPNService()
-                    vpnConnectedSwitchCompat.isChecked = true
+                    vpnConnectedSwitch.isChecked = true
                 }
             }
             catch (error: Exception)
@@ -247,37 +236,33 @@ class MainActivity : AppCompatActivity()
         println("✋ main activity onDestroy called ✋")
         Log.d(TAG, "onDestroy Called")
         super.onDestroy()
-        stopService(vpnServiceIntent)
+        stopService(moonbounceVPNIntent)
         unregisterReceiver(statusReceiver)
-        vpnConnectedSwitchCompat.isChecked = false
+        vpnConnectedSwitch.isChecked = false
     }
 
     override fun onStop() {
         super.onStop()
         Log.d(TAG, "onStop Called")
         unregisterReceiver(statusReceiver)
-        vpnConnectedSwitchCompat.isChecked = false
+        vpnConnectedSwitch.isChecked = false
     }
 
-    fun startVPNService() {
-        if (vpnServiceIntent == null)
-        {
-            vpnServiceIntent = Intent(this, MBAKVpnService::class.java)
-        }
-
+    fun startVPNService()
+    {
         println("MainActivity Server IP Address: $ipAddress")
         println("MainActivity Server Port: $serverPort")
         println("MainActivity Disallowed App: $disallowedApp")
         println("MainActivity Exclude Route: $excludeRoute")
-        println("MainActivity VPN Switched on: $vpnConnectedSwitchCompat")
+        println("MainActivity VPN Switched on: $vpnConnectedSwitch")
 
-        vpnServiceIntent!!.putExtra(SERVER_IP, ipAddress)
-        vpnServiceIntent!!.putExtra(SERVER_PORT, serverPort)
-        vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
-        vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
+        moonbounceVPNIntent.putExtra(SERVER_IP, ipAddress)
+        moonbounceVPNIntent.putExtra(SERVER_PORT, serverPort)
+        moonbounceVPNIntent.putExtra(DISALLOWED_APP, disallowedApp)
+        moonbounceVPNIntent.putExtra(EXCLUDE_ROUTE, excludeRoute)
 
         // Start the VPN Service
-        startService(vpnServiceIntent)
-        vpnConnectedSwitchCompat.text = "VPN connected"
+        startService(moonbounceVPNIntent)
+        vpnConnectedSwitch.text = "VPN connected"
     }
 }
