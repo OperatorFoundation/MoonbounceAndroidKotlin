@@ -26,6 +26,7 @@ val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
 val DISALLOWED_APP = "DisallowedApp"
 const val EXCLUDE_ROUTE = "ExcludeRoute"
+val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
 
 class MBAKVpnService : VpnService()
 {
@@ -37,6 +38,7 @@ class MBAKVpnService : VpnService()
     var outputStream: FileOutputStream? = null
     var transportServerIP = ""
     var transportServerPort = 1234
+    var usePluggableTransport = false
     var useTransport = false
     val foregroundID = 5678
 
@@ -319,6 +321,7 @@ class MBAKVpnService : VpnService()
         val maybePort: Int
         val maybeDisallowedApp: String?
         val maybeExcludeRoute: String?
+        val maybeUsePluggableTransports: Boolean
 
         if (intent != null)
         {
@@ -326,11 +329,13 @@ class MBAKVpnService : VpnService()
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
             maybeDisallowedApp = intent.getStringExtra(DISALLOWED_APP)
             maybeExcludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
+            maybeUsePluggableTransports = intent.getBooleanExtra(USE_PLUGGABLE_TRANSPORTS, false)
 
             println("MBAKVpnService Server IP is: $maybeIP")
             println("MBAKVpnService Server Port is: $maybePort")
             println("MBAKVpnService Disallowed App is: $maybeDisallowedApp")
             println("MBAKVpnService Exclude Route is: $maybeExcludeRoute")
+            println("MBAKVpnServer Use Pluggable Transports is: $maybeUsePluggableTransports")
         }
         else
         {

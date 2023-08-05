@@ -28,8 +28,7 @@ class NetworkTests (val context: Context)
             {
                 val udpTestString = "ᓚᘏᗢ Catbus is UDP tops! ᓚᘏᗢ"
                 println("🌙 Sending UDP test data (${udpTestString.toByteArray().size} bytes): ${udpTestString.toByteArray().toHexString()}")
-                val transmissionConnection =
-                    TransmissionConnection(host, udpEchoPort, ConnectionType.UDP, null)
+                val transmissionConnection = TransmissionConnection(host, udpEchoPort, ConnectionType.UDP, null)
                 transmissionConnection.write(udpTestString)
                 println("🌙 NetworkTests: UDP returned from write.")
 

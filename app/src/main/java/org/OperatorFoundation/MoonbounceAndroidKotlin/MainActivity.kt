@@ -10,6 +10,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity()
     var serverPort = 1234
     var disallowedApp: String? = null
     var excludeRoute: String? = null
+    var usePluggableTransports: Boolean = false
     var statusReceiver: BroadcastReceiver? = null
 
     lateinit var ipEditText: EditText
@@ -34,6 +36,7 @@ class MainActivity : AppCompatActivity()
     lateinit var testTCPButton: Button
     lateinit var testUDPButton: Button
     lateinit var vpnConnectedSwitch: SwitchCompat
+    lateinit var pluggableTransportsSwitch: SwitchCompat
     lateinit var moonbounceVPNIntent: Intent
 
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
@@ -73,19 +76,34 @@ class MainActivity : AppCompatActivity()
         testTCPButton = findViewById(R.id.test_TCP)
         testUDPButton = findViewById(R.id.test_UDP)
         vpnConnectedSwitch = findViewById(R.id.connect_switch)
+        pluggableTransportsSwitch = findViewById(R.id.pluggable_transports_switch)
 
         chooseDisallowAppsButton.setOnClickListener {
             chooseDisallowedApps()
         }
 
-        vpnConnectedSwitch.setOnCheckedChangeListener {
-                _, isChecked ->
-            if (isChecked) {
+        vpnConnectedSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked)
+            {
 //                vpnConnectedSwitchCompat.text = "VPN connected"
                 connectTapped()
-            } else {
+            }
+            else
+            {
                 vpnConnectedSwitch.text = "Connect VPN"
 //                stopVPNTapped()
+            }
+        }
+
+        pluggableTransportsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked)
+            {
+                usePluggableTransports()
+                pluggableTransportsSwitch.text = "Using Pluggable Transports"
+            }
+            else
+            {
+                pluggableTransportsSwitch.text = "Use Pluggable Transports"
             }
         }
 
@@ -123,52 +141,6 @@ class MainActivity : AppCompatActivity()
             println("has an icon - ${app.icon != null}\n")
         }
     }
-
-//    fun stopVPNTapped() {
-//        println("Stop VPN Tapped.")
-//        resultText.text = "Stop VPN Tapped."
-//
-//        if (vpnServiceIntent == null)
-//        {
-//            print("There is no VPN service to stop.")
-//        }
-//        else
-//        {
-//            try
-//            {
-//                mbakVpnService.stopService(vpnServiceIntent)
-//                mbakVpnService.stopVPN()
-//                onStop()
-//            }
-//            catch (error: Exception)
-//            {
-//                println("Error stopping VPN: $error")
-//            }
-//        }
-//
-//        vpnConnectedSwitchCompat.isChecked = false
-//    }
-
-
-
-//    override fun stopService(name: Intent?): Boolean
-//    {
-//        println("XXXXXXXXX STOP SERVICE CALLED!! XXXXXXXXX")
-//        if (vpnServiceIntent == null)
-//        {
-//            print("There is no VPN service to stop.")
-//            return false
-//        }
-//        else
-//        {
-//            val serviceStopped = super.stopService(vpnServiceIntent)
-//            mbakVpnService.stopVPN()
-//            vpnConnectedSwitchCompat.isChecked = false
-//            //topForeground(/* removeNotification = */ true)
-//            print("$name Service Stopped: $serviceStopped")
-//            return serviceStopped
-//        }
-//    }
 
     private fun testTCPTapped()
     {
@@ -231,6 +203,13 @@ class MainActivity : AppCompatActivity()
         }
     }
 
+    fun usePluggableTransports()
+    {
+        println("Using Pluggable Transports")
+        usePluggableTransports = true
+        // TODO: Not yet implemented.
+    }
+
     override fun onDestroy()
     {
         println("✋ main activity onDestroy called ✋")
@@ -255,11 +234,13 @@ class MainActivity : AppCompatActivity()
         println("MainActivity Disallowed App: $disallowedApp")
         println("MainActivity Exclude Route: $excludeRoute")
         println("MainActivity VPN Switched on: $vpnConnectedSwitch")
+        println("MainActivity Using Pluggable Transports: ")
 
         moonbounceVPNIntent.putExtra(SERVER_IP, ipAddress)
         moonbounceVPNIntent.putExtra(SERVER_PORT, serverPort)
         moonbounceVPNIntent.putExtra(DISALLOWED_APP, disallowedApp)
         moonbounceVPNIntent.putExtra(EXCLUDE_ROUTE, excludeRoute)
+        moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
 
         // Start the VPN Service
         startService(moonbounceVPNIntent)
