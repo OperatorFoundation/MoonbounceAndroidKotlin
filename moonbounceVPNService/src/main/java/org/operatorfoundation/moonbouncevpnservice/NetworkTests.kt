@@ -32,7 +32,7 @@ class NetworkTests (val context: Context)
                 transmissionConnection.write(udpTestString)
                 println("🌙 NetworkTests: UDP returned from write.")
 
-                val result = transmissionConnection.read(35)
+                val result = transmissionConnection.read(39)
                 println("🌙 NetworkTests: UDP returned from read.")
 
                 if (result == null)
@@ -44,6 +44,11 @@ class NetworkTests (val context: Context)
                 {
                     val resultString = String(result)
                     println("🌙 NetworkTests: UDP test got a response: $resultString")
+
+                    if (resultString == udpTestString)
+                    {
+                        println("🌙 NetworkTests: UDP test Success!!")
+                    }
                     broadcastStatus(udpTestNotification, UDP_TEST_STATUS, true)
                 }
             }
