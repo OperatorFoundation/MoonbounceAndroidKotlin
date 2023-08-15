@@ -85,13 +85,11 @@ class MainActivity : AppCompatActivity()
         vpnConnectedSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked)
             {
-//                vpnConnectedSwitchCompat.text = "VPN connected"
                 connectTapped()
             }
             else
             {
-                vpnConnectedSwitch.text = "Connect VPN"
-//                stopVPNTapped()
+                disconnectTapped()
             }
         }
 
@@ -203,6 +201,15 @@ class MainActivity : AppCompatActivity()
         }
     }
 
+    fun disconnectTapped()
+    {
+        vpnConnectedSwitch.text = "Connect VPN"
+        println("User request to close the tunnel.")
+        stopService(moonbounceVPNIntent)
+        moonbounceVPNIntent.action = STOP_VPN_ACTION
+        startService(moonbounceVPNIntent)
+    }
+
     fun usePluggableTransports()
     {
         println("Using Pluggable Transports")
@@ -212,17 +219,13 @@ class MainActivity : AppCompatActivity()
 
     override fun onDestroy()
     {
-        println("✋ main activity onDestroy called ✋")
-        Log.d(TAG, "onDestroy Called")
         super.onDestroy()
-        stopService(moonbounceVPNIntent)
         unregisterReceiver(statusReceiver)
         vpnConnectedSwitch.isChecked = false
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d(TAG, "onStop Called")
         unregisterReceiver(statusReceiver)
         vpnConnectedSwitch.isChecked = false
     }
@@ -241,8 +244,9 @@ class MainActivity : AppCompatActivity()
         moonbounceVPNIntent.putExtra(DISALLOWED_APP, disallowedApp)
         moonbounceVPNIntent.putExtra(EXCLUDE_ROUTE, excludeRoute)
         moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
+        moonbounceVPNIntent.action = START_VPN_ACTION
 
-        // Start the VPN Service
+                // Start the VPN Service
         startService(moonbounceVPNIntent)
         vpnConnectedSwitch.text = "VPN connected"
     }

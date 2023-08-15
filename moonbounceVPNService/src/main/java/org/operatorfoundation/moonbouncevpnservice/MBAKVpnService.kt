@@ -21,12 +21,13 @@ import java.io.IOException
 import java.net.InetAddress
 import kotlin.concurrent.thread
 
-
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
 val DISALLOWED_APP = "DisallowedApp"
 const val EXCLUDE_ROUTE = "ExcludeRoute"
 val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
+val STOP_VPN_ACTION = "StopMoonbounce"
+val START_VPN_ACTION = "StartMoonbounce"
 
 class MBAKVpnService : VpnService()
 {
@@ -65,38 +66,20 @@ class MBAKVpnService : VpnService()
         print("****** onStartCommand called *******")
         super.onStartCommand(intent, flags, startId)
 
-        getConnectInfoFromIntent(intent)
-        connect()
-        val notificationChannelId = "VPN Service Channel"
-        val channelName = "VPN Service Channel"
+        if (intent != null)
+        {
+            if (intent.action == STOP_VPN_ACTION)
+            {
+                stopVPN()
+            }
+            else if (intent.action == START_VPN_ACTION)
+            {
+                getConnectInfoFromIntent(intent)
+                connect()
+                createForegroundNotification()
+            }
+        }
 
-        // TODO: move into own function
-        val chan = NotificationChannel(notificationChannelId,
-            channelName,
-            NotificationManager.IMPORTANCE_HIGH)
-        chan.lightColor = Color.BLUE
-        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        val manager: NotificationManager =
-            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
-        val notificationIntent = Intent(this, MBAKVpnService::class.java)
-
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification: Notification = Notification.Builder(this, notificationChannelId)
-            .setSmallIcon(R.drawable.crecent_moon)
-            .setContentTitle("VPN Service Channel")
-            .setContentText("VPN Tunnel is ON. Navigate to the MBAK App to turn it off.")
-            .setContentIntent(pendingIntent)
-            .build()
-        // TODO: change the id and put into a variable
-
-        startForeground(foregroundID, notification)
         return START_STICKY
     }
 
@@ -116,7 +99,6 @@ class MBAKVpnService : VpnService()
                 // Data sent through this socket will go directly to the underlying network, so its traffic will not be forwarded through the VPN
                 // A VPN tunnel should protect itself if its destination is covered by VPN routes.
                 // Otherwise its outgoing packets will be sent back to the VPN interface and cause an infinite loop.
-
                 if (this.transmissionConnection == null)
                 {
                     throw Error("Failed to create a connection to the server.")
@@ -382,6 +364,37 @@ class MBAKVpnService : VpnService()
         return true
     }
 
+    fun createForegroundNotification()
+    {
+        val notificationChannelId = "VPN Service Channel"
+        val channelName = "VPN Service Channel"
+        val chan = NotificationChannel(notificationChannelId,
+            channelName,
+            NotificationManager.IMPORTANCE_HIGH)
+        chan.lightColor = Color.BLUE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        val manager: NotificationManager =
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+        manager.createNotificationChannel(chan)
+        val notificationIntent = Intent(this, MBAKVpnService::class.java)
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification: Notification = Notification.Builder(this, notificationChannelId)
+            .setSmallIcon(R.drawable.crecent_moon)
+            .setContentTitle("VPN Service Channel")
+            .setContentText("VPN Tunnel is ON. Navigate to the MBAK App to turn it off.")
+            .setContentIntent(pendingIntent)
+            .build()
+
+        startForeground(foregroundID, notification)
+    }
+
     fun broadcastStatus(action: String, statusDescription: String, status: Boolean)
     {
         val intent = Intent()
@@ -390,61 +403,50 @@ class MBAKVpnService : VpnService()
         sendBroadcast(intent)
     }
 
-    fun stopVPN()
+    public fun stopVPN()
     {
-        println("✋ **MBAKVpnService.kt START OF stopVPN()**  ✋")
         cleanUp()
-        STOP_FOREGROUND_DETACH
         stopSelf()
-        println("✋ **MBAKVpnService.kt END OF stopVPN()** ✋")
     }
 
     fun cleanUp()
     {
-        println("✋ cleanUp called ✋")
-        Log.d(TAG, "cleanUp Called")
         try {
             parcelFileDescriptor?.close()
         } catch (ex: IOException) {
             Log.e(TAG, "parcelFileDescriptor.close()", ex)
         }
+
         try {
             transmissionConnection?.close()
         } catch (ex:IOException) {
             Log.e(TAG, "flowerConnection.close()", ex)
         }
+
         try {
             outputStream?.close()
         } catch (ex:IOException) {
             Log.e(TAG, "outputStream.close()", ex)
         }
+
         try {
             inputStream?.close()
         } catch (ex:IOException) {
             Log.e(TAG, "inputStream.close()", ex)
         }
-        STOP_FOREGROUND_DETACH
-        stopSelf()
-        println("✋ left cleanUp() function ✋")
+
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     override fun onDestroy()
     {
-        println("✋ onDestroy called ✋")
-        Log.d(TAG, "onDestroy Called")
-        super.onDestroy()
-        stopForeground(STOP_FOREGROUND_DETACH)
         stopVPN()
-        stopSelf()
-        Toast.makeText(this, "Notification Service Service destroyed by user.", Toast.LENGTH_LONG).show()
+        super.onDestroy()
     }
 
     override fun onRevoke()
     {
-        println("✋ onRevoke called ✋")
-        Log.d(TAG, "onRevoke Called")
-        super.onRevoke()
-
         stopVPN()
+        super.onRevoke()
     }
 }
