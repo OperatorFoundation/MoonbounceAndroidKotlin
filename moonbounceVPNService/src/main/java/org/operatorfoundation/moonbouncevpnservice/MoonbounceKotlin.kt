@@ -41,11 +41,23 @@ class MoonbounceKotlin(val context: Context, var ipAddress: String, var serverPo
         }
 
         // Start the VPN Service
+        vpnServiceIntent!!.action = START_VPN_ACTION
         return context.startService(vpnServiceIntent)
     }
 
     fun stopVPN(): Boolean
     {
+        println("----------->>>>>>>>>>>>> Plugin Stop Service called")
+
+        if (vpnServiceIntent == null)
+        {
+            // The intent doesn't exist so there is nothing to stop
+            return false
+        }
+
+        vpnServiceIntent!!.action = STOP_VPN_ACTION
+        context.startService(vpnServiceIntent)
+
         return context.stopService(vpnServiceIntent)
     }
 }
