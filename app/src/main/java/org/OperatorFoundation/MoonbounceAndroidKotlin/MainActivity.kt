@@ -10,11 +10,18 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
-import org.operatorfoundation.moonbouncevpnservice.*
+import org.operatorfoundation.moonbouncevpnservice.DISALLOWED_APP
+import org.operatorfoundation.moonbouncevpnservice.EXCLUDE_ROUTE
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
+import org.operatorfoundation.moonbouncevpnservice.NetworkTests
+import org.operatorfoundation.moonbouncevpnservice.SERVER_IP
+import org.operatorfoundation.moonbouncevpnservice.SERVER_PORT
+import org.operatorfoundation.moonbouncevpnservice.START_VPN_ACTION
+import org.operatorfoundation.moonbouncevpnservice.STOP_VPN_ACTION
+import org.operatorfoundation.moonbouncevpnservice.USE_PLUGGABLE_TRANSPORTS
 
 class MainActivity : AppCompatActivity()
 {
@@ -224,11 +231,11 @@ class MainActivity : AppCompatActivity()
         vpnConnectedSwitch.isChecked = false
     }
 
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(statusReceiver)
-        vpnConnectedSwitch.isChecked = false
-    }
+//    override fun onStop() {
+//        super.onStop()
+//        unregisterReceiver(statusReceiver)
+//        vpnConnectedSwitch.isChecked = false
+//    }
 
     fun startVPNService()
     {
