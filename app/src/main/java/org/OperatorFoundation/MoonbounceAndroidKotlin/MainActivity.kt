@@ -231,12 +231,6 @@ class MainActivity : AppCompatActivity()
         vpnConnectedSwitch.isChecked = false
     }
 
-//    override fun onStop() {
-//        super.onStop()
-//        unregisterReceiver(statusReceiver)
-//        vpnConnectedSwitch.isChecked = false
-//    }
-
     fun startVPNService()
     {
         println("MainActivity Server IP Address: $ipAddress")
