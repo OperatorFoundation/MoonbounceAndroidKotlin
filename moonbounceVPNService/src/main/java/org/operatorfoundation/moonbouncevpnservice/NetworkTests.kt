@@ -115,9 +115,33 @@ class NetworkTests (val context: Context)
         }
     }
 
+    fun tcpConnectTest()
+    {
+        println("🌙 Launching TCP connect Test")
+        println("\uD83C\uDF19 host and port: $host: $tcpEchoPort")
+
+        thread(start = true)
+        {
+            try
+            {
+                val testString = "Catbus is TCP tops!"
+
+                TransmissionConnection(host, tcpEchoPort, ConnectionType.TCP, null)
+                println("🌙 TCP Connect test: Transmission Connection created. TCP Connect test succeeded!")
+                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
+
+            }
+            catch(error: Exception)
+            {
+                println("🌙 TCP Connect test: TCP test failed to make a connection. $error")
+                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+            }
+        }
+    }
+
     fun tcpTest2k()
     {
-        println("🌙 Launching TCP Test")
+        println("🌙 Launching TCP Test 2k")
         println("\uD83C\uDF19 host and port: $host: $tcpEchoPort")
 
         thread(start = true)

@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity()
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
-        networkTests.tcpTest2k()
+        networkTests.tcpConnectTest()
     }
 
     private fun testUDPTapped()
