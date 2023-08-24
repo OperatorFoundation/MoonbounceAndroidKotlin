@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity()
     lateinit var resultText: TextView
     lateinit var chooseDisallowAppsButton: Button
     lateinit var testTCPButton: Button
+    lateinit var testTCPConnectButton: Button
+    lateinit var testTCPBigDataButton: Button
     lateinit var testUDPButton: Button
     lateinit var vpnConnectedSwitch: SwitchCompat
     lateinit var pluggableTransportsSwitch: SwitchCompat
@@ -81,6 +83,8 @@ class MainActivity : AppCompatActivity()
         excludeRouteEditText = findViewById(R.id.exclude_route)
         chooseDisallowAppsButton = findViewById(R.id.installed_apps)
         testTCPButton = findViewById(R.id.test_TCP)
+        testTCPConnectButton = findViewById(R.id.test_TCP_connect)
+        testTCPBigDataButton = findViewById(R.id.test_TCP_Big_Data)
         testUDPButton = findViewById(R.id.test_UDP)
         vpnConnectedSwitch = findViewById(R.id.connect_switch)
         pluggableTransportsSwitch = findViewById(R.id.pluggable_transports_switch)
@@ -114,6 +118,14 @@ class MainActivity : AppCompatActivity()
 
         testTCPButton.setOnClickListener {
             testTCPTapped()
+        }
+
+        testTCPConnectButton.setOnClickListener {
+            testTCPConnectTapped()
+        }
+
+        testTCPBigDataButton.setOnClickListener {
+            testTCPBigDataButtonTapped()
         }
 
         testUDPButton.setOnClickListener {
@@ -153,7 +165,25 @@ class MainActivity : AppCompatActivity()
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
+        networkTests.tcpTest()
+    }
+
+    private fun testTCPConnectTapped()
+    {
+        println("Test TCP Connect Clicked.")
+
+        ipAddress = ipEditText.text.toString()
+        networkTests.host = ipAddress
         networkTests.tcpConnectTest()
+    }
+
+    private fun testTCPBigDataButtonTapped()
+    {
+        println("Test TCP Big Data Clicked.")
+
+        ipAddress = ipEditText.text.toString()
+        networkTests.host = ipAddress
+        networkTests.tcpTest2k()
     }
 
     private fun testUDPTapped()
@@ -164,7 +194,6 @@ class MainActivity : AppCompatActivity()
         networkTests.host = ipAddress
         networkTests.udpTest()
     }
-
     fun connectTapped()
     {
         println("Connect tapped.")

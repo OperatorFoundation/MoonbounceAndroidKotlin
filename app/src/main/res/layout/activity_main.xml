@@ -9,9 +9,9 @@
     <EditText
         android:id="@+id/server_address"
         android:name='IP'
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_margin="5dp"
         android:gravity="center_horizontal"
         android:hint="Enter The Server IP Address "
         android:imeOptions="actionDone"
@@ -26,10 +26,9 @@
 
     <EditText
         android:id="@+id/server_port"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="8dp"
+        android:layout_margin="5dp"
         android:gravity="center_horizontal"
         android:hint="Enter The Server Port Number"
         android:imeOptions="actionDone"
@@ -42,10 +41,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/server_address" />
 
+    <Button
+            android:id="@+id/installed_apps"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Print Installed Apps"
+            app:layout_constraintBottom_toTopOf="@+id/disallowed_app"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/server_port" />
+
     <EditText
         android:id="@+id/disallowed_app"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
+        android:layout_margin="5dp"
         android:gravity="center_horizontal"
         android:hint="Enter The App to Disallow"
         android:imeOptions="actionDone"
@@ -60,10 +71,9 @@
 
     <EditText
         android:id="@+id/exclude_route"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="8dp"
+        android:layout_margin="5dp"
         android:gravity="center_horizontal"
         android:hint="Enter The Route to Exclude"
         android:imeOptions="actionDone"
@@ -79,10 +89,9 @@
 
     <TextView
         android:id="@+id/resultText"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="5dp"
+        android:layout_width="250dp"
+        android:layout_height="60dp"
+        android:layout_margin="15dp"
         android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,7 +101,6 @@
         android:id="@+id/connect_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
         android:switchMinWidth="50dp"
         android:theme="@style/ThemeOverlay.MySwitchCompat"
         android:text="Connect VPN"
@@ -106,6 +114,7 @@
             android:id="@+id/pluggable_transports_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:switchMinWidth="50dp"
             android:theme="@style/ThemeOverlay.MySwitchCompat"
             android:text="Use Pluggable Transports"
@@ -117,35 +126,42 @@
 
     <Button
         android:id="@+id/test_TCP"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:text="Test TCP"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/test_UDP"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/pluggable_transports_switch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/test_UDP"
-        android:layout_width="wrap_content"
+        android:id="@+id/test_TCP_connect"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Test UDP"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/test_TCP" />
+        android:text="Test TCP connect"
+        app:layout_constraintTop_toBottomOf="@+id/test_TCP"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/installed_apps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="Print Installed Apps"
-        app:layout_constraintBottom_toTopOf="@+id/disallowed_app"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/server_port" />
+            android:id="@+id/test_TCP_Big_Data"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Test TCP Big Data"
+            app:layout_constraintTop_toBottomOf="@+id/test_TCP_connect"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+            android:id="@+id/test_UDP"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Test UDP"
+            app:layout_constraintTop_toBottomOf="@+id/test_TCP_Big_Data"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
