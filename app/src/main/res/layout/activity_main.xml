@@ -22,7 +22,8 @@
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/server_port" />
 
     <EditText
         android:id="@+id/server_port"
@@ -39,7 +40,8 @@
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/server_address" />
+        app:layout_constraintTop_toBottomOf="@+id/server_address"
+        app:layout_constraintBottom_toTopOf="@+id/installed_apps" />
 
     <Button
             android:id="@+id/installed_apps"
@@ -67,7 +69,8 @@
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/installed_apps" />
+        app:layout_constraintTop_toBottomOf="@+id/installed_apps"
+        app:layout_constraintBottom_toTopOf="@+id/exclude_route" />
 
     <EditText
         android:id="@+id/exclude_route"
@@ -85,7 +88,8 @@
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/disallowed_app" />
+        app:layout_constraintTop_toBottomOf="@+id/disallowed_app"
+        app:layout_constraintBottom_toTopOf="@+id/resultText" />
 
     <TextView
         android:id="@+id/resultText"
@@ -95,7 +99,8 @@
         android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/exclude_route" />
+        app:layout_constraintTop_toBottomOf="@+id/exclude_route"
+        app:layout_constraintBottom_toTopOf="@+id/connect_switch" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/connect_switch"
@@ -107,6 +112,7 @@
         android:textColor="@color/purple_700"
         android:checked="false"
         app:layout_constraintTop_toBottomOf="@+id/resultText"
+        app:layout_constraintBottom_toTopOf="@+id/pluggable_transports_switch"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -121,6 +127,7 @@
             android:textColor="@color/purple_700"
             android:checked="false"
             app:layout_constraintTop_toBottomOf="@+id/connect_switch"
+            app:layout_constraintBottom_toTopOf="@+id/test_TCP"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -131,6 +138,7 @@
         android:layout_marginBottom="8dp"
         android:text="Test TCP"
         app:layout_constraintTop_toBottomOf="@+id/pluggable_transports_switch"
+        app:layout_constraintBottom_toTopOf="@+id/test_TCP_connect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -141,6 +149,7 @@
         android:layout_marginBottom="8dp"
         android:text="Test TCP connect"
         app:layout_constraintTop_toBottomOf="@+id/test_TCP"
+        app:layout_constraintBottom_toTopOf="@+id/test_TCP_Big_Data"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -151,6 +160,7 @@
             android:layout_marginBottom="8dp"
             android:text="Test TCP Big Data"
             app:layout_constraintTop_toBottomOf="@+id/test_TCP_connect"
+            app:layout_constraintBottom_toTopOf="@+id/test_UDP"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -161,7 +171,8 @@
             android:layout_marginBottom="8dp"
             android:text="Test UDP"
             app:layout_constraintTop_toBottomOf="@+id/test_TCP_Big_Data"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
