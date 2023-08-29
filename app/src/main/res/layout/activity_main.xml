@@ -122,20 +122,20 @@
             app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/test_TCP"
+        android:id="@+id/test_TCP_connect"
         android:layout_width="250dp"
         android:layout_height="40dp"
-        android:text="Test TCP"
+        android:text="Test TCP connect"
         app:layout_constraintTop_toBottomOf="@+id/pluggable_transports_switch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/test_TCP_connect"
+        android:id="@+id/test_TCP"
         android:layout_width="250dp"
         android:layout_height="40dp"
-        android:text="Test TCP connect"
-        app:layout_constraintTop_toBottomOf="@+id/test_TCP"
+        android:text="Test TCP"
+        app:layout_constraintTop_toBottomOf="@+id/test_TCP_connect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -144,7 +144,7 @@
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:text="Test TCP Big Data"
-            app:layout_constraintTop_toBottomOf="@+id/test_TCP_connect"
+            app:layout_constraintTop_toBottomOf="@+id/test_TCP"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
