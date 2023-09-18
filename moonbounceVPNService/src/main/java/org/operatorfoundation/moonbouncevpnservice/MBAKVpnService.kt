@@ -440,13 +440,13 @@ class MBAKVpnService : VpnService()
 
     override fun onDestroy()
     {
-        stopVPN()
+        cleanUp()
         super.onDestroy()
     }
 
     override fun onRevoke()
     {
-        stopVPN()
+        cleanUp()
         super.onRevoke()
     }
 }
