@@ -253,13 +253,6 @@ class MainActivity : AppCompatActivity()
         // TODO: Not yet implemented.
     }
 
-    override fun onDestroy()
-    {
-        super.onDestroy()
-        unregisterReceiver(statusReceiver)
-        vpnConnectedSwitch.isChecked = false
-    }
-
     fun startVPNService()
     {
         println("MainActivity Server IP Address: $ipAddress")
