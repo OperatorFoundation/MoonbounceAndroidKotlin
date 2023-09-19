@@ -38,7 +38,7 @@
         android:id="@+id/server_port"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+        android:layout_marginTop="10dp"
         android:gravity="center_horizontal"
         android:hint="Enter The Server Port Number"
         android:imeOptions="actionDone"
