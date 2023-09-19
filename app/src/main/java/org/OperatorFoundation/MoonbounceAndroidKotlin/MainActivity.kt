@@ -269,7 +269,7 @@ class MainActivity : AppCompatActivity()
         moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
         moonbounceVPNIntent.action = START_VPN_ACTION
 
-                // Start the VPN Service
+        // Start the VPN Service
         startService(moonbounceVPNIntent)
         vpnConnectedSwitch.text = "VPN connected"
     }

@@ -1,15 +1,16 @@
 package org.operatorfoundation.moonbouncevpnservice
 
-import android.content.Intent
-import org.operatorfoundation.transmission.ConnectionType
-import org.operatorfoundation.transmission.TransmissionConnection
-import kotlin.concurrent.thread
 import android.content.Context
+import android.content.Intent
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.TCP_TEST_STATUS
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.UDP_TEST_STATUS
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.tcpTestNotification
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.udpTestNotification
+import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.Transmission.Companion.toHexString
+import org.operatorfoundation.transmission.TransmissionConnection
+import java.net.InetAddress
+import kotlin.concurrent.thread
 
 
 class NetworkTests (val context: Context)
@@ -186,6 +187,30 @@ class NetworkTests (val context: Context)
         }
     }
 
+    fun testHTTP()
+    {
+        // http://operatorfoundation.org/images/logo.jpg
+        //GET / HTTP/1.0
+        //\r\n\]r\n
+
+
+    }
+
+    fun testResolveDNS()
+    {
+        val address = InetAddress.getByName("operatorfoundation.org")
+        println("testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
+
+        if (address.hostAddress == "185.199.111.153")
+        {
+            broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
+        }
+        else
+        {
+            broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+        }
+    }
+
     fun broadcastStatus(action: String, statusDescription: String, status: Boolean)
     {
         val intent = Intent()
@@ -193,6 +218,8 @@ class NetworkTests (val context: Context)
         intent.action = action
         context.sendBroadcast(intent)
     }
+
+
 
 //    fun tcpBroadcastMessage(success: Boolean)
 //    {
