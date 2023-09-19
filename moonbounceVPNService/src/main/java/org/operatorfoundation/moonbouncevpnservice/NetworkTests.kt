@@ -198,16 +198,19 @@ class NetworkTests (val context: Context)
 
     fun testResolveDNS()
     {
-        val address = InetAddress.getByName("operatorfoundation.org")
-        println("testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
+        thread(start = true)
+        {
+            val address = InetAddress.getByName("operatorfoundation.org")
+            println("testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
 
-        if (address.hostAddress == "185.199.111.153")
-        {
-            broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
-        }
-        else
-        {
-            broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+            if (address.hostAddress == "185.199.111.153")
+            {
+                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
+            }
+            else
+            {
+                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+            }
         }
     }
 

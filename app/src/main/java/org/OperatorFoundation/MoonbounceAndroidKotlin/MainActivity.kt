@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity()
     lateinit var testTCPConnectButton: Button
     lateinit var testTCPBigDataButton: Button
     lateinit var testUDPButton: Button
+    lateinit var testHTTPButton: Button
+    lateinit var testResolveDNSButton: Button
     lateinit var vpnConnectedSwitch: SwitchCompat
     lateinit var pluggableTransportsSwitch: SwitchCompat
     lateinit var moonbounceVPNIntent: Intent
@@ -86,6 +88,8 @@ class MainActivity : AppCompatActivity()
         testTCPConnectButton = findViewById(R.id.test_TCP_connect)
         testTCPBigDataButton = findViewById(R.id.test_TCP_Big_Data)
         testUDPButton = findViewById(R.id.test_UDP)
+        testHTTPButton = findViewById(R.id.test_HTTP)
+        testResolveDNSButton = findViewById(R.id.test_resolve_DNS)
         vpnConnectedSwitch = findViewById(R.id.connect_switch)
         pluggableTransportsSwitch = findViewById(R.id.pluggable_transports_switch)
 
@@ -131,6 +135,14 @@ class MainActivity : AppCompatActivity()
         testUDPButton.setOnClickListener {
             testUDPTapped()
         }
+
+        testHTTPButton.setOnClickListener{
+            testHTTPTapped()
+        }
+
+        testResolveDNSButton.setOnClickListener {
+            testResolveDNS()
+        }
     }
 
     private fun configureReceiver()
@@ -161,7 +173,7 @@ class MainActivity : AppCompatActivity()
 
     private fun testTCPTapped()
     {
-        println("Test TCP Clicked.")
+        println("Test TCP tapped.")
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
@@ -170,7 +182,7 @@ class MainActivity : AppCompatActivity()
 
     private fun testTCPConnectTapped()
     {
-        println("Test TCP Connect Clicked.")
+        println("Test TCP Connect tapped.")
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
@@ -179,7 +191,7 @@ class MainActivity : AppCompatActivity()
 
     private fun testTCPBigDataButtonTapped()
     {
-        println("Test TCP Big Data Clicked.")
+        println("Test TCP Big Data tapped.")
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
@@ -188,12 +200,27 @@ class MainActivity : AppCompatActivity()
 
     private fun testUDPTapped()
     {
-        println("Test UDP Clicked.")
+        println("Test UDP tapped.")
 
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
         networkTests.udpTest()
     }
+
+    private fun testHTTPTapped()
+    {
+        println("Test HTTP tapped.")
+
+        networkTests.testHTTP()
+    }
+
+    private fun testResolveDNS()
+    {
+        println("Test Resolve DNS tapped.")
+
+        networkTests.testResolveDNS()
+    }
+
     fun connectTapped()
     {
         println("Connect tapped.")

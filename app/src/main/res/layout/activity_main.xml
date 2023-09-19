@@ -17,7 +17,7 @@
     <EditText
         android:id="@+id/server_address"
         android:name='IP'
-        android:layout_width="250dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="5dp"
@@ -29,15 +29,16 @@
         android:text=""
         android:textSize="14dp"
         android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/server_port"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
          />
 
     <EditText
         android:id="@+id/server_port"
-        android:layout_width="250dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
         android:gravity="center_horizontal"
         android:hint="Enter The Server Port Number"
         android:imeOptions="actionDone"
@@ -46,9 +47,9 @@
         android:text="1234"
         android:textSize="14dp"
         android:textAlignment="center"
+        app:layout_constraintStart_toEndOf="@id/server_address"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/server_address" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/installed_apps"
@@ -105,14 +106,14 @@
         android:id="@+id/connect_switch"
         android:layout_width="wrap_content"
         android:layout_height="10dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:switchMinWidth="50dp"
         android:theme="@style/ThemeOverlay.MySwitchCompat"
         android:text="Connect VPN"
         android:textColor="@color/purple_700"
         android:checked="false"
         app:layout_constraintTop_toBottomOf="@+id/exclude_route"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/pluggable_transports_switch"
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.SwitchCompat
@@ -125,9 +126,9 @@
             android:text="Use Pluggable Transports"
             android:textColor="@color/purple_700"
             android:checked="false"
-            app:layout_constraintTop_toBottomOf="@+id/connect_switch"
+            app:layout_constraintTop_toBottomOf="@+id/resultText"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toEndOf="@id/connect_switch" />
 
     <Button
         android:id="@+id/test_TCP_connect"
@@ -162,6 +163,24 @@
             android:layout_height="40dp"
             android:text="Test UDP"
             app:layout_constraintTop_toBottomOf="@+id/test_TCP_Big_Data"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+            android:id="@+id/test_HTTP"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:text="Test HTTP"
+            app:layout_constraintTop_toBottomOf="@+id/test_UDP"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+            android:id="@+id/test_resolve_DNS"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:text="Test Resolve DNS"
+            app:layout_constraintTop_toBottomOf="@+id/test_HTTP"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
