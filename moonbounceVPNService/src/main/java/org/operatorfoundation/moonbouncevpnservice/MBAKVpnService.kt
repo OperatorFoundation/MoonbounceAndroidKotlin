@@ -55,10 +55,14 @@ class MBAKVpnService : VpnService()
         const val vpnStatusNotification = "org.operatorfoundation.moonbounceAndroidKotlin.VPNStatusNotification"
         const val tcpTestNotification = "org.operatorfoundation.moonbounceAndroidKotlin.tcptestnotification"
         const val udpTestNotification = "org.operatorfoundation.moonbounceAndroidKotlin.udptestnotification"
+        const val httpTestNotification = "org.operatorfoundation.moonbounceAndroidKotlin.httptestnotification"
+        const val dnsTestNotification = "org.operatorfoundation.moonbounceAndroidKotlin.dnstestnotification"
 
         const val VPN_CONNECTED_STATUS = "VpnConnected"
         const val TCP_TEST_STATUS = "TCPTestPassed"
         const val UDP_TEST_STATUS = "UDPTestPassed"
+        const val DNS_TEST_STATUS = "DNSTestPassed"
+        const val HTTP_TEST_STATUS = "HTTPTestPassed"
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int

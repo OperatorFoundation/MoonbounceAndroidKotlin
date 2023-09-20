@@ -4,8 +4,12 @@ import android.content.Context
 import android.content.Intent
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.TCP_TEST_STATUS
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.UDP_TEST_STATUS
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.DNS_TEST_STATUS
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.HTTP_TEST_STATUS
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.tcpTestNotification
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.udpTestNotification
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.dnsTestNotification
+import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.httpTestNotification
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.Transmission.Companion.toHexString
 import org.operatorfoundation.transmission.TransmissionConnection
@@ -191,15 +195,50 @@ class NetworkTests (val context: Context)
 
     fun testHTTP()
     {
-        // http://operatorfoundation.org/images/logo.jpg
-        //GET / HTTP/1.0
-        //\r\n\]r\n
+//        // http://operatorfoundation.org/images/logo.jpg
+//        //GET / HTTP/1.0
+//        //\r\n\]r\n
+//
+//        URL("http://operatorfoundation.org/images/logo.jpg").run {
+//            openConnection().run {
+//                this as HttpURLConnection
+//                val response = inputStream.bufferedReader().readText()
+//                println("testHTTP received a response: $response")
+//            }
+//        }
 
-        URL("http://operatorfoundation.org/images/logo.jpg").run {
-            openConnection().run {
-                this as HttpURLConnection
-                val response = inputStream.bufferedReader().readText()
-                println("testHTTP received a response: $response")
+        println("🌙 Launching HTTP Test")
+        println("\uD83C\uDF19 host and port: 185.199.109.153: 80")
+
+        thread(start = true)
+        {
+            try
+            {
+                val transmissionConnection = TransmissionConnection("185.199.109.153", 80, ConnectionType.TCP, null)
+                println("🌙 HTTP test: Transmission Connection created.")
+
+                transmissionConnection.write("GET / HTTP/1.0\r\n\r\n".toByteArray())
+                println("🌙 HTTP test: Wrote some data...")
+
+                val result = transmissionConnection.read(10)
+                transmissionConnection.close()
+
+                if (result == null)
+                {
+                    println("🌙 HTTP test tried to read, but got no response")
+                    broadcastStatus(httpTestNotification, HTTP_TEST_STATUS, false)
+                }
+                else
+                {
+                    println("🌙 NetworkTests: HTTP test got a response (${result.size} bytes)): $result")
+
+                    broadcastStatus(httpTestNotification, HTTP_TEST_STATUS, true)
+                }
+            }
+            catch(error: Exception)
+            {
+                println("🌙 NetworkTests: HTTP test failed to make a connection. $error")
+                broadcastStatus(tcpTestNotification, HTTP_TEST_STATUS, false)
             }
         }
     }
@@ -215,12 +254,12 @@ class NetworkTests (val context: Context)
             if (address.hostAddress == "185.199.111.153")
             {
                 println("🌙 testResolveDNS succeeded! ✨")
-                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
+                broadcastStatus(dnsTestNotification, DNS_TEST_STATUS, true)
             }
             else
             {
                 println("🌙 testResolveDNS returned an unexpected host address: ${address.hostAddress}")
-                broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
+                broadcastStatus(dnsTestNotification, DNS_TEST_STATUS, false)
             }
         }
     }
