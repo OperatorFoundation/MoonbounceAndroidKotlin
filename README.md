@@ -7,19 +7,9 @@ Moonbounce is a VPN Service library for Android devices written in Kotlin. This 
  
 The server side companion to this library is [Persona](https://github.com/OperatorFoundation/Persona.git).
 
-### Requirements
-
-| Platform | Minimum Android Version | Status |
-| --- | --- | --- |
-| Android 7.0 | API 24 | Building But Unsupported |
-
-| Platform | Maximum Android Version | Status |
-| --- | --- | --- |
-| Android 12.0 | API 31 | Building But Unsupported |
-
 ### Demo Application
 
-A rudimentory demo application is included in this repository as an example of how to use this library.
+A rudimentory demo application is included in this repository as an example of how to use this library. Install it on any Android device with platforms between 7.0 (API 24) through 12.0 (API 34). This is experimental software and is still under development.
 
 - Moonbounce requires a [Persona](https://github.com/OperatorFoundation/Persona.git) server to be listening on an IP address and Port of your choosing. See the repository for instructions on how to run this server.
 
