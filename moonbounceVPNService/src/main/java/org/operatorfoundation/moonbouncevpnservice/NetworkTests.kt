@@ -9,7 +9,9 @@ import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService.Companion.udpT
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.Transmission.Companion.toHexString
 import org.operatorfoundation.transmission.TransmissionConnection
+import java.net.HttpURLConnection
 import java.net.InetAddress
+import java.net.URL
 import kotlin.concurrent.thread
 
 
@@ -193,7 +195,13 @@ class NetworkTests (val context: Context)
         //GET / HTTP/1.0
         //\r\n\]r\n
 
-
+        URL("http://operatorfoundation.org/images/logo.jpg").run {
+            openConnection().run {
+                this as HttpURLConnection
+                val response = inputStream.bufferedReader().readText()
+                println("testHTTP received a response: $response")
+            }
+        }
     }
 
     fun testResolveDNS()
