@@ -206,17 +206,20 @@ class NetworkTests (val context: Context)
 
     fun testResolveDNS()
     {
+        println("🌙 testResolveDNS called")
         thread(start = true)
         {
             val address = InetAddress.getByName("operatorfoundation.org")
-            println("testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
+            println("🌙 testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
 
             if (address.hostAddress == "185.199.111.153")
             {
+                println("🌙 testResolveDNS succeeded! ✨")
                 broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, true)
             }
             else
             {
+                println("🌙 testResolveDNS returned an unexpected host address: ${address.hostAddress}")
                 broadcastStatus(tcpTestNotification, TCP_TEST_STATUS, false)
             }
         }
