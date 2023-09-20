@@ -13,7 +13,7 @@ A rudimentory demo application is included in this repository as an example of h
 
 - Moonbounce requires a [Persona](https://github.com/OperatorFoundation/Persona.git) server to be listening on an IP address and Port of your choosing. See the repository for instructions on how to run this server.
 
-- The Moonbounce demo app allows the user to connect to the VPN. At a minimum, the user must enter the server IP and port for the Persona server, and then tap the toggle switch to connect to the VPN. Also available to users is the enter an app to disallow and a route to exclude buttons. Use these buttons to route internet traffic through your default ISP.
+- The Moonbounce demo app allows the user to connect to the VPN. At a minimum, the user must enter the server IP and port for the Persona server, and then tap the toggle switch to connect to the VPN. Also available to users are the enter an app to disallow and a route to exclude button. Use these buttons to route internet traffic through your default ISP.
 
 - During the initial connection the user will have to give the application permission to run in the background. Once permission is granted the user will see a key icon appear in the toolbar of the phone (To access the notifications pull down on the top of the phone screen). You are now connected to your VPN.
 
