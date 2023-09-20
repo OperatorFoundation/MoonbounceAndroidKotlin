@@ -251,7 +251,7 @@ class NetworkTests (val context: Context)
             val address = InetAddress.getByName("operatorfoundation.org")
             println("🌙 testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
 
-            if (address.hostAddress == "185.199.111.153")
+            if (address.hostAddress == "185.199.110.153")
             {
                 println("🌙 testResolveDNS succeeded! ✨")
                 broadcastStatus(dnsTestNotification, DNS_TEST_STATUS, true)
