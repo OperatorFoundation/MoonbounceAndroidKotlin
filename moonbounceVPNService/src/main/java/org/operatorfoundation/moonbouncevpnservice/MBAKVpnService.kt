@@ -196,7 +196,7 @@ class MBAKVpnService : VpnService()
             }
             else
             {
-                println("🌖 MoonbounceAndroid.vpnToServer: inputStream.readBytes() received ${numberOfBytesReceived} bytes")
+//                println("🌖 MoonbounceAndroid.vpnToServer: inputStream.readBytes() received ${numberOfBytesReceived} bytes")
                 if (transmissionConnection == null)
                 {
                     println("vpnToServer(): Transmission connection is closed")
@@ -206,9 +206,7 @@ class MBAKVpnService : VpnService()
                 {
                     try
                     {
-                        println("🌖 MoonbounceAndroid.vpnToServer: calling connection.writeMessage()")
                         transmissionConnection!!.writeWithLengthPrefix(readBuffer, sizeInBits)
-                        println("🌖 MoonbounceAndroid.vpnToServer: returned from connection.writeMessage()")
                     }
                     catch (vpnToServerWriteError: Exception)
                     {
@@ -262,9 +260,9 @@ class MBAKVpnService : VpnService()
         }
         else
         {
-            println("🌖 MoonbounceAndroid.serverToVPN: inputStream.readBytes() received ${messageData.size} bytes")
+//            println("🌖 MoonbounceAndroid.serverToVPN: inputStream.readBytes() received ${messageData.size} bytes")
             vpnOutputStream.write(messageData)
-            println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: finished writing ${messageData.size} bytes to outputStream.")
+//            println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: finished writing ${messageData.size} bytes to outputStream.")
         }
     }
 
