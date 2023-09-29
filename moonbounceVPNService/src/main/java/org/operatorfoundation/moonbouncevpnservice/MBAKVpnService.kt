@@ -12,7 +12,6 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import android.widget.Toast
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
 import java.io.FileInputStream
@@ -20,6 +19,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.net.InetAddress
 import kotlin.concurrent.thread
+import kotlin.time.TimeSource
 
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
@@ -49,6 +49,9 @@ class MBAKVpnService : VpnService()
     private var builder: Builder = Builder()
     private var disallowedApp = ""
     private var excludeRoute: String? = null
+    private var timeSource = TimeSource.Monotonic
+    private var lastVpnWrite = timeSource.markNow()
+
 
     companion object
     {
@@ -236,7 +239,15 @@ class MBAKVpnService : VpnService()
             {
                 try
                 {
+                    val currentTime = timeSource.markNow()
+                    val elapsedTime = currentTime - lastVpnWrite
+
+                    if (elapsedTime.inWholeMilliseconds < 10)
+                    {
+                        //Thread.sleep(10 - elapsedTime.inWholeMilliseconds)
+                    }
                     serverToVPN(outputStream!!, transmissionConnection!!)
+                    lastVpnWrite = currentTime
                 }
                 catch (serverToVPNError: Exception)
                 {
@@ -405,7 +416,7 @@ class MBAKVpnService : VpnService()
         sendBroadcast(intent)
     }
 
-    public fun stopVPN()
+    fun stopVPN()
     {
         cleanUp()
         stopSelf()
@@ -413,6 +424,7 @@ class MBAKVpnService : VpnService()
 
     fun cleanUp()
     {
+        println("Entered the cleanUp function.")
         try {
             parcelFileDescriptor?.close()
         } catch (ex: IOException) {
@@ -438,6 +450,7 @@ class MBAKVpnService : VpnService()
         }
 
         stopForeground(STOP_FOREGROUND_REMOVE)
+        println("Leaving the cleanUp function.")
     }
 
     override fun onDestroy()
