@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
 import android.graphics.Color
 import android.net.IpPrefix
 import android.net.VpnService
@@ -405,7 +406,14 @@ class MBAKVpnService : VpnService()
             .setContentIntent(pendingIntent)
             .build()
 
-        startForeground(foregroundID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        {
+            startForeground(foregroundID, notification, FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED)
+        }
+        else
+        {
+            startForeground(foregroundID, notification)
+        }
     }
 
     fun broadcastStatus(action: String, statusDescription: String, status: Boolean)

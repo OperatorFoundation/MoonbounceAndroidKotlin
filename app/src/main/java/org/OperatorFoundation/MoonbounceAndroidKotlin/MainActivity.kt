@@ -5,12 +5,14 @@ import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import org.operatorfoundation.moonbouncevpnservice.DISALLOWED_APP
@@ -155,7 +157,14 @@ class MainActivity : AppCompatActivity()
         filter.addAction(MBAKVpnService.dnsTestNotification)
         statusReceiver = StatusReceiver()
         // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
-        registerReceiver(statusReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        {
+            registerReceiver(statusReceiver, filter, RECEIVER_NOT_EXPORTED)
+        }
+        else
+        {
+            registerReceiver(statusReceiver, filter)
+        }
     }
 
     // Use this to see a printed list of applications with the ID needed to disallow them from the tunnel
