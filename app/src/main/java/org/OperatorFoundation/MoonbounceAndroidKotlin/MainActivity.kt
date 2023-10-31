@@ -21,6 +21,7 @@ import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
 import org.operatorfoundation.moonbouncevpnservice.NetworkTests
 import org.operatorfoundation.moonbouncevpnservice.SERVER_IP
 import org.operatorfoundation.moonbouncevpnservice.SERVER_PORT
+import org.operatorfoundation.moonbouncevpnservice.SERVER_PUBLIC_KEY
 import org.operatorfoundation.moonbouncevpnservice.START_VPN_ACTION
 import org.operatorfoundation.moonbouncevpnservice.STOP_VPN_ACTION
 import org.operatorfoundation.moonbouncevpnservice.USE_PLUGGABLE_TRANSPORTS
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity()
     val networkTests = NetworkTests(this)
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
+    var serverPublicKey: String? = null
     var disallowedApp: String? = null
     var excludeRoute: String? = null
     var usePluggableTransports: Boolean = false
@@ -38,6 +40,7 @@ class MainActivity : AppCompatActivity()
 
     lateinit var ipEditText: EditText
     lateinit var portEditText: EditText
+    lateinit var serverPublicKeyEditText: EditText
     lateinit var disallowedAppEditText: EditText
     lateinit var excludeRouteEditText: EditText
     lateinit var resultText: TextView
@@ -83,6 +86,7 @@ class MainActivity : AppCompatActivity()
         resultText = findViewById(R.id.resultText)
         ipEditText = findViewById(R.id.server_address)
         portEditText = findViewById(R.id.server_port)
+        serverPublicKeyEditText = findViewById(R.id.server_public_key)
         disallowedAppEditText = findViewById(R.id.disallowed_app)
         excludeRouteEditText = findViewById(R.id.exclude_route)
         chooseDisallowAppsButton = findViewById(R.id.installed_apps)
@@ -102,10 +106,12 @@ class MainActivity : AppCompatActivity()
         vpnConnectedSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked)
             {
+                pluggableTransportsSwitch.isClickable = false
                 connectTapped()
             }
             else
             {
+                pluggableTransportsSwitch.isClickable = true
                 disconnectTapped()
             }
         }
@@ -113,11 +119,12 @@ class MainActivity : AppCompatActivity()
         pluggableTransportsSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked)
             {
-                usePluggableTransports()
+                usePluggableTransports = true
                 pluggableTransportsSwitch.text = "Using Pluggable Transports"
             }
             else
             {
+                usePluggableTransports = false
                 pluggableTransportsSwitch.text = "Use Pluggable Transports"
             }
         }
@@ -237,6 +244,7 @@ class MainActivity : AppCompatActivity()
         println("Connect tapped.")
         ipAddress = ipEditText.text.toString()
         serverPort = portEditText.text.toString().toInt()
+        serverPublicKey = serverPublicKeyEditText.text.toString()
         disallowedApp = disallowedAppEditText.text.toString()
         excludeRoute = excludeRouteEditText.text.toString()
 
@@ -295,6 +303,9 @@ class MainActivity : AppCompatActivity()
     {
         println("MainActivity Server IP Address: $ipAddress")
         println("MainActivity Server Port: $serverPort")
+        if (serverPublicKey != null) {
+            println("MainActivity Server Public Key: $serverPublicKey")
+        }
         println("MainActivity Disallowed App: $disallowedApp")
         println("MainActivity Exclude Route: $excludeRoute")
         println("MainActivity VPN Switched on: $vpnConnectedSwitch")
@@ -302,6 +313,9 @@ class MainActivity : AppCompatActivity()
 
         moonbounceVPNIntent.putExtra(SERVER_IP, ipAddress)
         moonbounceVPNIntent.putExtra(SERVER_PORT, serverPort)
+        if (serverPublicKey != null) {
+            moonbounceVPNIntent.putExtra(SERVER_PUBLIC_KEY, serverPublicKey)
+        }
         moonbounceVPNIntent.putExtra(DISALLOWED_APP, disallowedApp)
         moonbounceVPNIntent.putExtra(EXCLUDE_ROUTE, excludeRoute)
         moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)

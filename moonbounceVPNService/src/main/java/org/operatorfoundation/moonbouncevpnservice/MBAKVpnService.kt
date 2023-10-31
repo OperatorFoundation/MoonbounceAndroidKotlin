@@ -13,6 +13,10 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import org.operatorfoundation.shadow.ShadowConfig
+import org.operatorfoundation.shadow.ShadowConnection
+import org.operatorfoundation.shadow.ShadowSocket
+import org.operatorfoundation.transmission.Connection
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
 import java.io.FileInputStream
@@ -24,6 +28,7 @@ import kotlin.time.TimeSource
 
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
+val SERVER_PUBLIC_KEY = "ServerPublicKey"
 val DISALLOWED_APP = "DisallowedApp"
 const val EXCLUDE_ROUTE = "ExcludeRoute"
 val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
@@ -36,10 +41,12 @@ class MBAKVpnService : VpnService()
     val TAG = "MBAKVpnService"
     var parcelFileDescriptor: ParcelFileDescriptor? = null
     var transmissionConnection: TransmissionConnection? = null
+    var shadowConnection: Connection? = null
     var inputStream: FileInputStream? = null
     var outputStream: FileOutputStream? = null
     var transportServerIP = ""
     var transportServerPort = 1234
+    var transportServerPublicKey: String? = null
     var usePluggableTransport = false
     var useTransport = false
     val foregroundID = 5678
@@ -103,6 +110,13 @@ class MBAKVpnService : VpnService()
                     ConnectionType.TCP,
                     null
                 )
+
+                if (this.usePluggableTransport) {
+                    val serverAddress = "$transportServerIP:$transportServerPort"
+                    val config = ShadowConfig(transportServerPublicKey!!, "Darkstar", serverAddress)
+                    this.shadowConnection = ShadowConnection(this.transmissionConnection!!, config, null)
+                }
+
 
                 // Data sent through this socket will go directly to the underlying network, so its traffic will not be forwarded through the VPN
                 // A VPN tunnel should protect itself if its destination is covered by VPN routes.
@@ -210,7 +224,11 @@ class MBAKVpnService : VpnService()
                 {
                     try
                     {
-                        transmissionConnection!!.writeWithLengthPrefix(readBuffer, sizeInBits)
+                        if (this.usePluggableTransport) {
+                            shadowConnection!!.writeWithLengthPrefix(readBuffer, sizeInBits)
+                        } else {
+                            transmissionConnection!!.writeWithLengthPrefix(readBuffer, sizeInBits)
+                        }
                     }
                     catch (vpnToServerWriteError: Exception)
                     {
@@ -247,7 +265,11 @@ class MBAKVpnService : VpnService()
                     {
                         //Thread.sleep(10 - elapsedTime.inWholeMilliseconds)
                     }
-                    serverToVPN(outputStream!!, transmissionConnection!!)
+                    if (usePluggableTransport) {
+                        serverToVPN(outputStream!!, shadowConnection!!)
+                    } else {
+                        serverToVPN(outputStream!!, transmissionConnection!!)
+                    }
                     lastVpnWrite = currentTime
                 }
                 catch (serverToVPNError: Exception)
@@ -260,7 +282,7 @@ class MBAKVpnService : VpnService()
         }
     }
 
-    fun serverToVPN(vpnOutputStream: FileOutputStream, connection: TransmissionConnection)
+    fun serverToVPN(vpnOutputStream: FileOutputStream, connection: Connection)
     {
         val messageData = connection.readWithLengthPrefix(sizeInBits)
 
@@ -315,6 +337,8 @@ class MBAKVpnService : VpnService()
     {
         val maybeIP: String?
         val maybePort: Int
+        val maybeServerPublicKey: String?
+
         val maybeDisallowedApp: String?
         val maybeExcludeRoute: String?
         val maybeUsePluggableTransports: Boolean
@@ -323,6 +347,7 @@ class MBAKVpnService : VpnService()
         {
             maybeIP = intent.getStringExtra(SERVER_IP)
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
+            maybeServerPublicKey = intent.getStringExtra(SERVER_PUBLIC_KEY)
             maybeDisallowedApp = intent.getStringExtra(DISALLOWED_APP)
             maybeExcludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
             maybeUsePluggableTransports = intent.getBooleanExtra(USE_PLUGGABLE_TRANSPORTS, false)
@@ -348,6 +373,8 @@ class MBAKVpnService : VpnService()
             println("🌙 MBAKVpnService: Tried to connect without a valid IP")
             return false
         }
+
+        transportServerPublicKey = maybeServerPublicKey
 
         if (maybePort != 0)
         {
