@@ -8,9 +8,6 @@
     tools:context=".MainActivity">
 
 <androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -53,20 +50,19 @@
 
     <EditText
         android:id="@+id/server_public_key"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="250dp"
+        android:layout_height="40dp"
         android:layout_marginTop="10dp"
         android:gravity="center_horizontal"
         android:hint="Enter The Server's Public Key"
         android:imeOptions="actionDone"
-        android:inputType="number"
+        android:inputType="text"
         android:maxLength="66"
-        android:textSize="14dp"
         android:textAlignment="center"
+        android:textSize="14dp"
         app:layout_constraintEnd_toEndOf="@+id/server_port"
         app:layout_constraintStart_toStartOf="@+id/server_address"
-        app:layout_constraintTop_toBottomOf="@+id/server_port"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/server_port" />
 
     <Button
         android:id="@+id/installed_apps"
