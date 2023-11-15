@@ -37,7 +37,7 @@ class MoonbounceKotlin(val context: Context, var ipAddress: String, var serverPo
 
         if (!excludeRoute.isNullOrEmpty())
         {
-            vpnServiceIntent!!.putExtra(EXCLUDE_ROUTE, excludeRoute)
+            vpnServiceIntent!!.putExtra(EXCLUDE_ROUTES, excludeRoute)
         }
 
         // Start the VPN Service

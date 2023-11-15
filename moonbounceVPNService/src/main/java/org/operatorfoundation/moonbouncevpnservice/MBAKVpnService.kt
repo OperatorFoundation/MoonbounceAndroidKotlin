@@ -15,7 +15,6 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import org.operatorfoundation.shadow.ShadowConfig
 import org.operatorfoundation.shadow.ShadowConnection
-import org.operatorfoundation.shadow.ShadowSocket
 import org.operatorfoundation.transmission.Connection
 import org.operatorfoundation.transmission.ConnectionType
 import org.operatorfoundation.transmission.TransmissionConnection
@@ -30,7 +29,7 @@ val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
 val SERVER_PUBLIC_KEY = "ServerPublicKey"
 val DISALLOWED_APP = "DisallowedApp"
-const val EXCLUDE_ROUTE = "ExcludeRoute"
+const val EXCLUDE_ROUTES = "ExcludeRoute"
 val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
 val STOP_VPN_ACTION = "StopMoonbounce"
 val START_VPN_ACTION = "StartMoonbounce"
@@ -48,15 +47,14 @@ class MBAKVpnService : VpnService()
     var transportServerPort = 1234
     var transportServerPublicKey: String? = null
     var usePluggableTransport = false
-    var useTransport = false
     val foregroundID = 5678
 
     private val dnsServerIP = "8.8.8.8"
     private val route = "0.0.0.0"
     private val subnetMask = 8
     private var builder: Builder = Builder()
-    private var disallowedApp = ""
-    private var excludeRoute: String? = null
+    private var disallowedApp: String? = null
+    private var excludeRoutes: Array<String>? = null
     private var timeSource = TimeSource.Monotonic
     private var lastVpnWrite = timeSource.markNow()
 
@@ -116,7 +114,6 @@ class MBAKVpnService : VpnService()
                     val config = ShadowConfig(transportServerPublicKey!!, "Darkstar", serverAddress)
                     this.shadowConnection = ShadowConnection(this.transmissionConnection!!, config, null)
                 }
-
 
                 // Data sent through this socket will go directly to the underlying network, so its traffic will not be forwarded through the VPN
                 // A VPN tunnel should protect itself if its destination is covered by VPN routes.
@@ -310,21 +307,31 @@ class MBAKVpnService : VpnService()
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
 
-            println("********* Add disallowed application: $disallowedApp ********")
-            builder.addDisallowedApplication(disallowedApp)
+        if (!disallowedApp.isNullOrEmpty())
+        {
+            println("🌙 Found an app to exclude: $disallowedApp!!")
+            builder.addDisallowedApplication(disallowedApp!!)
+        }
 
-            // TODO: Test excludeRoute
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)  // TIRAMISU = API 33 = Version 13
-            {
-                excludeRoute?.let {
-                    val excludeRouteInetAddress = InetAddress.getByName(it)
-                    println("Get the excludeRouteInetAddress: $excludeRouteInetAddress")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)  // TIRAMISU = API 33 = Version 13
+        {
+            excludeRoutes?.let { requestedRoutesToExclude ->
+
+                for (requestedRoute in requestedRoutesToExclude)
+                {
+                    println("🌙 Found a route to exclude: $requestedRoute")
+                    val excludeRouteInetAddress = InetAddress.getByName(requestedRoute)
                     val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
-                    println("********* Get the excludeRouteIpPrefix: $excludeRouteIpPrefix *******")
 
                     builder.excludeRoute(excludeRouteIpPrefix)
                 }
             }
+        }
+        else
+        {
+            println("‼️Attempted to use the exclude route feature with an android API less than 33. Ignoring.")
+        }
 
         val parcelFileDescriptor = builder.establish()
 
@@ -340,7 +347,7 @@ class MBAKVpnService : VpnService()
         val maybeServerPublicKey: String?
 
         val maybeDisallowedApp: String?
-        val maybeExcludeRoute: String?
+        val maybeExcludeRoutes: Array<String>?
         val maybeUsePluggableTransports: Boolean
 
         if (intent != null)
@@ -349,13 +356,13 @@ class MBAKVpnService : VpnService()
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
             maybeServerPublicKey = intent.getStringExtra(SERVER_PUBLIC_KEY)
             maybeDisallowedApp = intent.getStringExtra(DISALLOWED_APP)
-            maybeExcludeRoute = intent.getStringExtra(EXCLUDE_ROUTE)
+            maybeExcludeRoutes = intent.getStringArrayExtra(EXCLUDE_ROUTES)
             maybeUsePluggableTransports = intent.getBooleanExtra(USE_PLUGGABLE_TRANSPORTS, false)
 
             println("MBAKVpnService Server IP is: $maybeIP")
             println("MBAKVpnService Server Port is: $maybePort")
             println("MBAKVpnService Disallowed App is: $maybeDisallowedApp")
-            println("MBAKVpnService Exclude Route is: $maybeExcludeRoute")
+            println("MBAKVpnService Exclude Route is: $maybeExcludeRoutes")
             println("MBAKVpnServer Use Pluggable Transports is: $maybeUsePluggableTransports")
         }
         else
@@ -394,9 +401,9 @@ class MBAKVpnService : VpnService()
         {
             println("MBAKVpnService: No Disallowed App was requested.")
         }
-        if (maybeExcludeRoute != null)
+        if (maybeExcludeRoutes != null)
         {
-            excludeRoute = maybeExcludeRoute
+            excludeRoutes = maybeExcludeRoutes
         }
         else
         {

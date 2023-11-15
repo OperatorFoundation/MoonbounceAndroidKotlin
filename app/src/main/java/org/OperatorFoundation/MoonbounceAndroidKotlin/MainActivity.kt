@@ -12,11 +12,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import org.operatorfoundation.moonbouncevpnservice.DISALLOWED_APP
-import org.operatorfoundation.moonbouncevpnservice.EXCLUDE_ROUTE
+import org.operatorfoundation.moonbouncevpnservice.EXCLUDE_ROUTES
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
 import org.operatorfoundation.moonbouncevpnservice.NetworkTests
 import org.operatorfoundation.moonbouncevpnservice.SERVER_IP
@@ -34,7 +33,7 @@ class MainActivity : AppCompatActivity()
     var serverPort = 1234
     var serverPublicKey: String? = null
     var disallowedApp: String? = null
-    var excludeRoute: String? = null
+    var excludeRoutes: Array<String>? = null
     var usePluggableTransports: Boolean = false
     var statusReceiver: BroadcastReceiver? = null
 
@@ -163,7 +162,7 @@ class MainActivity : AppCompatActivity()
         filter.addAction(MBAKVpnService.httpTestNotification)
         filter.addAction(MBAKVpnService.dnsTestNotification)
         statusReceiver = StatusReceiver()
-        // TODO: See if we can add the BroadcastPermission argument: https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20java.lang.String,%20android.os.Handler)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         {
             registerReceiver(statusReceiver, filter, RECEIVER_NOT_EXPORTED)
@@ -246,7 +245,12 @@ class MainActivity : AppCompatActivity()
         serverPort = portEditText.text.toString().toInt()
         serverPublicKey = serverPublicKeyEditText.text.toString()
         disallowedApp = disallowedAppEditText.text.toString()
-        excludeRoute = excludeRouteEditText.text.toString()
+
+        val routes = excludeRouteEditText.text.toString()
+        if (routes.isNotEmpty())
+        {
+            excludeRoutes = routes.split(" ").toTypedArray()
+        }
 
         if (ipAddress.isEmpty() || ipAddress.isBlank())
         {
@@ -307,7 +311,7 @@ class MainActivity : AppCompatActivity()
             println("MainActivity Server Public Key: $serverPublicKey")
         }
         println("MainActivity Disallowed App: $disallowedApp")
-        println("MainActivity Exclude Route: $excludeRoute")
+        println("MainActivity Exclude Route: $excludeRoutes")
         println("MainActivity VPN Switched on: $vpnConnectedSwitch")
         println("MainActivity Using Pluggable Transports: ")
 
@@ -317,7 +321,7 @@ class MainActivity : AppCompatActivity()
             moonbounceVPNIntent.putExtra(SERVER_PUBLIC_KEY, serverPublicKey)
         }
         moonbounceVPNIntent.putExtra(DISALLOWED_APP, disallowedApp)
-        moonbounceVPNIntent.putExtra(EXCLUDE_ROUTE, excludeRoute)
+        moonbounceVPNIntent.putExtra(EXCLUDE_ROUTES, excludeRoutes)
         moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
         moonbounceVPNIntent.action = START_VPN_ACTION
 
