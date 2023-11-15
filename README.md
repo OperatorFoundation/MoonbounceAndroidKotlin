@@ -31,7 +31,7 @@ To exclude a route from the VPN tunnel, provide the IP address that should be ex
 
  `moonbounceVPNIntent.putExtra(EXCLUDE_ROUTE, excludeRoute)`
 
-### Demo Application
+## Demo Application
 
 A rudimentory demo application is included in this repository as an example of how to use this library. Install it on any Android device with platforms between 7.0 (API 24) through 12.0 (API 34). This is experimental software and is still under development.
 
