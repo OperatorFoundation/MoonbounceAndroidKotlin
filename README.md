@@ -25,6 +25,8 @@ The demo application has a button that prints the package names of all applicati
 
 ### Exclude Route
 
+Note: A minimum Android API of 33 is required to use this feature.
+
 Moonbounce for Android allows users to enter a specific IP address to exclude from the VPN tunnel. This allows internet traffic destined for the specific IP address to be routed directly to the open network without passing through the VPN tunnel. 
 
 To exclude a route from the VPN tunnel, provide the IP address that should be excluded to the Moonbounce VPN library. This is done by adding it as an “extra” to the Moonbounce VPN Service intent before calling startService() with that intent. This is the same way that you would provide the vpn server’s IP address, or any application that you wish to also exclude. The demo application shows an example of how to do this correctly (please note that you must use the keys such as “EXCLUDE_ROUTE” that are shown in the demo application for the service to be able to find the values that you provide):
