@@ -9,7 +9,8 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp">
 
     <EditText
         android:id="@+id/server_address"
@@ -48,21 +49,60 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/connect_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="10dp"
+            android:layout_marginTop="20dp"
+            android:switchMinWidth="50dp"
+            android:theme="@style/ThemeOverlay.MySwitchCompat"
+            android:text="Connect VPN"
+            android:textColor="@color/purple_700"
+            android:checked="false"
+            app:layout_constraintTop_toBottomOf="@+id/server_port"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+            android:id="@+id/resultText"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/connect_switch"
+            />
+
     <EditText
-        android:id="@+id/server_public_key"
-        android:layout_width="250dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="10dp"
-        android:gravity="center_horizontal"
-        android:hint="Enter The Server's Public Key"
-        android:imeOptions="actionDone"
-        android:inputType="text"
-        android:maxLength="66"
-        android:textAlignment="center"
-        android:textSize="14dp"
-        app:layout_constraintEnd_toEndOf="@+id/server_port"
-        app:layout_constraintStart_toStartOf="@+id/server_address"
-        app:layout_constraintTop_toBottomOf="@+id/server_port" />
+            android:id="@+id/exclude_route"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789. "
+            android:gravity="center_horizontal"
+            android:hint="IPs to Exclude Seperated by Spaces"
+            android:imeOptions="actionDone"
+            android:inputType="number"
+            android:text=""
+            android:textAlignment="center"
+            android:textSize="14dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/resultText" />
+
+    <EditText
+            android:id="@+id/disallowed_app"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:hint="Enter The App to Disallow"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:text=""
+            android:textSize="14dp"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exclude_route" />
 
     <Button
         android:id="@+id/installed_apps"
@@ -71,62 +111,23 @@
         android:text="Print Installed Apps"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/server_public_key" />
-
-    <EditText
-        android:id="@+id/disallowed_app"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:hint="Enter The App to Disallow"
-        android:imeOptions="actionDone"
-        android:inputType="text"
-        android:text=""
-        android:textSize="14dp"
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/installed_apps" />
-
-    <EditText
-        android:id="@+id/exclude_route"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:digits="0123456789. "
-        android:gravity="center_horizontal"
-        android:hint="IPs to Exclude Seperated by Spaces"
-        android:imeOptions="actionDone"
-        android:inputType="number"
-        android:text=""
-        android:textAlignment="center"
-        android:textSize="14dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/disallowed_app" />
 
-    <TextView
-        android:id="@+id/resultText"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/exclude_route"
-         />
-
-    <androidx.appcompat.widget.SwitchCompat
-        android:id="@+id/connect_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="10dp"
-        android:layout_marginTop="20dp"
-        android:switchMinWidth="50dp"
-        android:theme="@style/ThemeOverlay.MySwitchCompat"
-        android:text="Connect VPN"
-        android:textColor="@color/purple_700"
-        android:checked="false"
-        app:layout_constraintTop_toBottomOf="@+id/exclude_route"
-        app:layout_constraintEnd_toStartOf="@id/pluggable_transports_switch"
-        app:layout_constraintStart_toStartOf="parent" />
+    <EditText
+            android:id="@+id/server_public_key"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center_horizontal"
+            android:hint="Enter The Server's Public Key"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLength="66"
+            android:textAlignment="center"
+            android:textSize="14dp"
+            app:layout_constraintEnd_toEndOf="@+id/server_port"
+            app:layout_constraintStart_toStartOf="@+id/server_address"
+            app:layout_constraintTop_toBottomOf="@+id/installed_apps" />
 
     <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/pluggable_transports_switch"
@@ -138,16 +139,28 @@
             android:text="Use Pluggable Transports"
             android:textColor="@color/purple_700"
             android:checked="false"
-            app:layout_constraintTop_toBottomOf="@+id/resultText"
+            app:layout_constraintTop_toBottomOf="@+id/server_public_key"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/connect_switch" />
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/test_divider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:layout_constraintTop_toBottomOf="@id/pluggable_transports_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            >
+
+    </com.google.android.material.divider.MaterialDivider>
 
     <Button
         android:id="@+id/test_TCP_connect"
         android:layout_width="250dp"
         android:layout_height="40dp"
         android:text="Test TCP connect"
-        app:layout_constraintTop_toBottomOf="@+id/pluggable_transports_switch"
+        app:layout_constraintTop_toBottomOf="@+id/test_divider"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
