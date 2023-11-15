@@ -53,7 +53,6 @@
             android:id="@+id/connect_switch"
             android:layout_width="wrap_content"
             android:layout_height="10dp"
-            android:layout_marginTop="20dp"
             android:switchMinWidth="50dp"
             android:theme="@style/ThemeOverlay.MySwitchCompat"
             android:text="Connect VPN"
