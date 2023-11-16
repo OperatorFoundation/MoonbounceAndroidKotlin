@@ -14,7 +14,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
-import org.operatorfoundation.moonbouncevpnservice.DISALLOWED_APP
+import org.operatorfoundation.moonbouncevpnservice.DISALLOWED_APPS
 import org.operatorfoundation.moonbouncevpnservice.EXCLUDE_ROUTES
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
 import org.operatorfoundation.moonbouncevpnservice.NetworkTests
@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity()
     var ipAddress = "0.0.0.0"
     var serverPort = 1234
     var serverPublicKey: String? = null
-    var disallowedApp: String? = null
+    var disallowedApps: Array<String>? = null
     var excludeRoutes: Array<String>? = null
     var usePluggableTransports: Boolean = false
     var statusReceiver: BroadcastReceiver? = null
@@ -178,14 +178,36 @@ class MainActivity : AppCompatActivity()
     {
         val appManager = AppManager(applicationContext)
         val installedApps = appManager.getApps()
+//        val appIDs = mutableListOf<String>()
+
         println("Installed applications:")
         for (app in installedApps)
         {
             println("\napp name - ${app.name}")
             println("app id - ${app.id}")
-            println("is a system app - ${app.isSystem}")
-            println("has an icon - ${app.icon != null}\n")
+//            appIDs.add(app.id)
         }
+
+//        println("### appNames List: ${appIDs.count()} items")
+//        val choices: Array<String> = appIDs.toTypedArray()
+//        println("### Choices Array: ${choices.count()} items")
+//        val preSelectedItems: BooleanArray = BooleanArray(appIDs.count(), init = {false})
+//        val selectedItems = mutableListOf<String>()
+//
+//        MaterialAlertDialogBuilder(this)
+//            .setTitle("Installed Apps")
+//            .setMessage("Select any apps that should not use the VPN.")
+////            .setMultiChoiceItems(choices, preSelectedItems) { dialog, which, checked ->
+////                if (checked)
+////                {
+////                    selectedItems.add(choices[which])
+////                    println("Adding ${choices[which]} to the disallowed apps list.")
+////                }
+////            }
+//            .setPositiveButton("OK"){ _: DialogInterface, _: Int ->
+//                println(">>>>> Apps selected to exclude: $choices")
+//            }
+//            .show()
     }
 
     private fun testTCPTapped()
@@ -241,18 +263,8 @@ class MainActivity : AppCompatActivity()
     fun connectTapped()
     {
         println("Connect tapped.")
-        ipAddress = ipEditText.text.toString()
-        serverPort = portEditText.text.toString().toInt()
-        serverPublicKey = serverPublicKeyEditText.text.toString()
-        disallowedApp = disallowedAppEditText.text.toString()
 
-        val routes = excludeRouteEditText.text.toString()
-        if (routes.isNotEmpty())
-        {
-            excludeRoutes = routes.split(" ").toTypedArray()
-        }
-
-        if (ipAddress.isEmpty() || ipAddress.isBlank())
+        if (ipEditText.text.toString().isBlank() || portEditText.text.toString().isBlank())
         {
             println("A valid server IP and port are required to enable VPN services.")
             resultText.text = "A valid server IP and port are required to enable VPN services."
@@ -296,37 +308,65 @@ class MainActivity : AppCompatActivity()
         startService(moonbounceVPNIntent)
     }
 
-    fun usePluggableTransports()
-    {
-        println("Using Pluggable Transports")
-        usePluggableTransports = true
-        // TODO: Not yet implemented.
-    }
-
     fun startVPNService()
     {
-        println("MainActivity Server IP Address: $ipAddress")
-        println("MainActivity Server Port: $serverPort")
-        if (serverPublicKey != null) {
-            println("MainActivity Server Public Key: $serverPublicKey")
-        }
-        println("MainActivity Disallowed App: $disallowedApp")
-        println("MainActivity Exclude Route: $excludeRoutes")
-        println("MainActivity VPN Switched on: $vpnConnectedSwitch")
-        println("MainActivity Using Pluggable Transports: ")
-
-        moonbounceVPNIntent.putExtra(SERVER_IP, ipAddress)
-        moonbounceVPNIntent.putExtra(SERVER_PORT, serverPort)
-        if (serverPublicKey != null) {
-            moonbounceVPNIntent.putExtra(SERVER_PUBLIC_KEY, serverPublicKey)
-        }
-        moonbounceVPNIntent.putExtra(DISALLOWED_APP, disallowedApp)
-        moonbounceVPNIntent.putExtra(EXCLUDE_ROUTES, excludeRoutes)
-        moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
+        // Set the action (start not stop)
         moonbounceVPNIntent.action = START_VPN_ACTION
 
+        // Set the IP address of the vpn server (transport server if a transport is being used)
+        ipAddress = ipEditText.text.toString()
+        moonbounceVPNIntent.putExtra(SERVER_IP, ipAddress)
+        println("MainActivity Server IP Address: $ipAddress")
+
+        // Set the port of the vpn server (transport server if a transport is being used)
+        serverPort = portEditText.text.toString().toInt()
+        moonbounceVPNIntent.putExtra(SERVER_PORT, serverPort)
+        println("MainActivity Server Port: $serverPort")
+
+        // Add the app id's of any apps that should not use the VPN
+        val selectedApps = disallowedAppEditText.text.toString()
+        if (selectedApps.isNotEmpty())
+        {
+            disallowedApps = selectedApps.split(" ").toTypedArray()
+            moonbounceVPNIntent.putExtra(DISALLOWED_APPS, disallowedApps)
+            println("MainActivity Disallowed App: $disallowedApps")
+        }
+
+        // Add any routes that should be excluded from the VPN
+        val routes = excludeRouteEditText.text.toString()
+        if (routes.isNotEmpty())
+        {
+            excludeRoutes = routes.split(" ").toTypedArray()
+            moonbounceVPNIntent.putExtra(EXCLUDE_ROUTES, excludeRoutes)
+            println("MainActivity Exclude Routes: $excludeRoutes")
+        }
+
+        // Indicate whether or not pluggable transports should be used
+        moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
+        println("MainActivity Using Pluggable Transports: $usePluggableTransports")
+
+        // Currently only the shadow transport is supported
+        // If opting to use a transport, provide the public key for that Shadow server
+        if (usePluggableTransports)
+        {
+            serverPublicKey = serverPublicKeyEditText.text.toString()
+            if (serverPublicKey != null) {
+                moonbounceVPNIntent.putExtra(SERVER_PUBLIC_KEY, serverPublicKey)
+                println("MainActivity Server Public Key: $serverPublicKey")
+            }
+        }
+
         // Start the VPN Service
-        startService(moonbounceVPNIntent)
-        vpnConnectedSwitch.text = "VPN connected"
+        val startVPNResult = startService(moonbounceVPNIntent)
+        if (startVPNResult != null)
+        {
+            vpnConnectedSwitch.isChecked = true
+            vpnConnectedSwitch.text = "VPN connected"
+        }
+        else
+        {
+            vpnConnectedSwitch.isChecked = false
+            vpnConnectedSwitch.text = "Connect VPN"
+        }
     }
 }

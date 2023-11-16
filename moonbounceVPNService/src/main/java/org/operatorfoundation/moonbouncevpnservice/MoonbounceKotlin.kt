@@ -32,7 +32,7 @@ class MoonbounceKotlin(val context: Context, var ipAddress: String, var serverPo
 
         if (!disallowedApp.isNullOrEmpty())
         {
-            vpnServiceIntent!!.putExtra(DISALLOWED_APP, disallowedApp)
+            vpnServiceIntent!!.putExtra(DISALLOWED_APPS, disallowedApp)
         }
 
         if (!excludeRoute.isNullOrEmpty())

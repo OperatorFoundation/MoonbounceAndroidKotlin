@@ -28,7 +28,7 @@ import kotlin.time.TimeSource
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
 val SERVER_PUBLIC_KEY = "ServerPublicKey"
-val DISALLOWED_APP = "DisallowedApp"
+val DISALLOWED_APPS = "DisallowedApp"
 const val EXCLUDE_ROUTES = "ExcludeRoute"
 val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
 val STOP_VPN_ACTION = "StopMoonbounce"
@@ -53,7 +53,7 @@ class MBAKVpnService : VpnService()
     private val route = "0.0.0.0"
     private val subnetMask = 8
     private var builder: Builder = Builder()
-    private var disallowedApp: String? = null
+    private var disallowedApps: Array<String>? = null
     private var excludeRoutes: Array<String>? = null
     private var timeSource = TimeSource.Monotonic
     private var lastVpnWrite = timeSource.markNow()
@@ -307,12 +307,14 @@ class MBAKVpnService : VpnService()
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
 
-        if (!disallowedApp.isNullOrEmpty())
-        {
-            println("🌙 Found an app to exclude: $disallowedApp!!")
-            builder.addDisallowedApplication(disallowedApp!!)
-        }
+        disallowedApps?.let { requestedAppsToExclude ->
 
+            for (requestedApp in requestedAppsToExclude)
+            {
+                println("🌙 Found an app to exclude: $requestedApp")
+                builder.addDisallowedApplication(requestedApp)
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)  // TIRAMISU = API 33 = Version 13
         {
@@ -346,7 +348,7 @@ class MBAKVpnService : VpnService()
         val maybePort: Int
         val maybeServerPublicKey: String?
 
-        val maybeDisallowedApp: String?
+        val maybeDisallowedApps: Array<String>?
         val maybeExcludeRoutes: Array<String>?
         val maybeUsePluggableTransports: Boolean
 
@@ -355,13 +357,13 @@ class MBAKVpnService : VpnService()
             maybeIP = intent.getStringExtra(SERVER_IP)
             maybePort = intent.getIntExtra(SERVER_PORT, 0)
             maybeServerPublicKey = intent.getStringExtra(SERVER_PUBLIC_KEY)
-            maybeDisallowedApp = intent.getStringExtra(DISALLOWED_APP)
+            maybeDisallowedApps = intent.getStringArrayExtra(DISALLOWED_APPS)
             maybeExcludeRoutes = intent.getStringArrayExtra(EXCLUDE_ROUTES)
             maybeUsePluggableTransports = intent.getBooleanExtra(USE_PLUGGABLE_TRANSPORTS, false)
 
             println("MBAKVpnService Server IP is: $maybeIP")
             println("MBAKVpnService Server Port is: $maybePort")
-            println("MBAKVpnService Disallowed App is: $maybeDisallowedApp")
+            println("MBAKVpnService Disallowed App is: $maybeDisallowedApps")
             println("MBAKVpnService Exclude Route is: $maybeExcludeRoutes")
             println("MBAKVpnServer Use Pluggable Transports is: $maybeUsePluggableTransports")
         }
@@ -393,9 +395,9 @@ class MBAKVpnService : VpnService()
             return false
         }
 
-        if (maybeDisallowedApp != null)
+        if (maybeDisallowedApps != null)
         {
-            disallowedApp = maybeDisallowedApp
+            disallowedApps = maybeDisallowedApps
         }
         else
         {
