@@ -360,6 +360,7 @@ class MBAKVpnService : VpnService()
             maybeDisallowedApps = intent.getStringArrayExtra(DISALLOWED_APPS)
             maybeExcludeRoutes = intent.getStringArrayExtra(EXCLUDE_ROUTES)
             maybeUsePluggableTransports = intent.getBooleanExtra(USE_PLUGGABLE_TRANSPORTS, false)
+            this.usePluggableTransport = maybeUsePluggableTransports
 
             println("MBAKVpnService Server IP is: $maybeIP")
             println("MBAKVpnService Server Port is: $maybePort")
