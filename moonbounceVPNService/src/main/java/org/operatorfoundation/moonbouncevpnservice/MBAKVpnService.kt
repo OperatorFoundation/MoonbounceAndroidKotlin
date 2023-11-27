@@ -395,6 +395,15 @@ class MBAKVpnService : VpnService()
             return false
         }
 
+        if (maybeUsePluggableTransports != null)
+        {
+            usePluggableTransport = maybeUsePluggableTransports
+        }
+        else
+        {
+            println("MBAKVpnService: Not using pluggable transports.")
+        }
+
         if (maybeDisallowedApps != null)
         {
             disallowedApps = maybeDisallowedApps

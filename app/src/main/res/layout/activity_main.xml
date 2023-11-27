@@ -113,20 +113,20 @@
         app:layout_constraintTop_toBottomOf="@+id/disallowed_app" />
 
     <EditText
-            android:id="@+id/server_public_key"
-            android:layout_width="250dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="10dp"
-            android:gravity="center_horizontal"
-            android:hint="Enter The Server's Public Key"
-            android:imeOptions="actionDone"
-            android:inputType="text"
-            android:maxLength="66"
-            android:textAlignment="center"
-            android:textSize="14dp"
-            app:layout_constraintEnd_toEndOf="@+id/server_port"
-            app:layout_constraintStart_toStartOf="@+id/server_address"
-            app:layout_constraintTop_toBottomOf="@+id/installed_apps" />
+        android:id="@+id/server_public_key"
+        android:layout_width="250dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:gravity="center_horizontal"
+        android:hint="Enter The Server's Public Key"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:maxLength="135"
+        android:textAlignment="center"
+        android:textSize="14dp"
+        app:layout_constraintEnd_toEndOf="@+id/server_port"
+        app:layout_constraintStart_toStartOf="@+id/server_address"
+        app:layout_constraintTop_toBottomOf="@+id/installed_apps" />
 
     <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/pluggable_transports_switch"
