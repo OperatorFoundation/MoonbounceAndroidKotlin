@@ -75,6 +75,31 @@ moonbounceVPNIntent.putExtra(EXCLUDE_ROUTES, excludeRoutes)
 startService(moonbounceVPNIntent)
 ```
 
+## Pluggable Transports
+
+Moonbounce for Android allows for the use of pluggable transports. (Currently only Shadow servers are supported)
+1) Use the IP and Port of the transport server you wish to connect to (as mentioned above in the "Starting the VPN Service" section).
+2) Provide the public key for the Shadow server
+3) Toggle the "Use Pluggable Transports" switch.
+4) Connect to VPN
+
+```
+// 1. Set the IP address of the vpn server (transport server)
+moonbounceVPNIntent.putExtra(SERVER_IP, "127.0.0.1") // Use your actual Shadow server IP here
+
+// 2. Set the port of the vpn server (transport server)
+moonbounceVPNIntent.putExtra(SERVER_PORT, 1111) // Use your actual Shadow server port here
+
+// 3. Provide the public key for that Shadow server
+moonbounceVPNIntent.putExtra(SERVER_PUBLIC_KEY, serverPublicKey)
+
+// 4. Indicate whether or not pluggable transports should be used
+moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
+
+// 5. Start the VPN Service
+startService(moonbounceVPNIntent)
+```
+
 ## Demo Application
 
 A rudimentory demo application is included in this repository as an example of how to use this library. Install it on any Android device with minimum API 33. This is experimental software and is still under development. The demo is meant only to show an example of how to use the library API and is not intended to be used as a standalone application.
