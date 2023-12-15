@@ -12,6 +12,8 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import androidx.core.app.ServiceCompat.stopForeground
+import androidx.core.content.ContextCompat.getSystemService
 import org.operatorfoundation.shadow.ShadowConfig
 import org.operatorfoundation.shadow.ShadowConnection
 import org.operatorfoundation.transmission.Connection
@@ -39,9 +41,9 @@ class MBAKVpnService : VpnService()
     val TAG = "MBAKVpnService"
     var parcelFileDescriptor: ParcelFileDescriptor? = null
     var transmissionConnection: TransmissionConnection? = null
-    var shadowConnection: Connection? = null
-    var inputStream: FileInputStream? = null
-    var outputStream: FileOutputStream? = null
+    var shadowConnection: ShadowConnection? = null
+//    var inputStream: FileInputStream? = null
+//    var outputStream: FileOutputStream? = null
     var transportServerIP = ""
     var transportServerPort = 1234
     var transportServerPublicKey: String? = null
@@ -54,9 +56,7 @@ class MBAKVpnService : VpnService()
     private var builder: Builder = Builder()
     private var disallowedApps: Array<String>? = null
     private var excludeRoutes: Array<String>? = null
-    private var timeSource = TimeSource.Monotonic
-    private var lastVpnWrite = timeSource.markNow()
-
+//    private var timeSource = TimeSource.Monotonic
 
     companion object
     {
@@ -108,12 +108,6 @@ class MBAKVpnService : VpnService()
                     null
                 )
 
-                if (this.usePluggableTransport) {
-                    val serverAddress = "$transportServerIP:$transportServerPort"
-                    val config = ShadowConfig(transportServerPublicKey!!, "Darkstar", serverAddress)
-                    this.shadowConnection = ShadowConnection(this.transmissionConnection!!, config, null)
-                }
-
                 // Data sent through this socket will go directly to the underlying network, so its traffic will not be forwarded through the VPN
                 // A VPN tunnel should protect itself if its destination is covered by VPN routes.
                 // Otherwise its outgoing packets will be sent back to the VPN interface and cause an infinite loop.
@@ -136,20 +130,42 @@ class MBAKVpnService : VpnService()
                 }
                 else
                 {
-                    outputStream = FileOutputStream(parcelFileDescriptor!!.fileDescriptor)
-                    inputStream = FileInputStream(parcelFileDescriptor!!.fileDescriptor)
+                    val outputStream = FileOutputStream(parcelFileDescriptor!!.fileDescriptor)
+                    val inputStream = FileInputStream(parcelFileDescriptor!!.fileDescriptor)
 
-                    println("ð MBAKVpnService: starting ServerToVPN loop")
+                    if (this.usePluggableTransport)
+                    {
+                        val serverAddress = "$transportServerIP:$transportServerPort"
+                        val config = ShadowConfig(transportServerPublicKey!!, "Darkstar", serverAddress)
+                        this.shadowConnection = ShadowConnection(this.transmissionConnection!!, config, null)
+                    }
+
+                    println("🌙 MBAKVpnService: starting ServerToVPN loop")
                     thread(start = true)
                     {
-                        runServerToVPN()
+                        if (this.usePluggableTransport)
+                        {
+                            runServerToVPN(outputStream, this.shadowConnection!!)
+                        }
+                        else
+                        {
+                            runServerToVPN(outputStream, this.transmissionConnection!!)
+                        }
                     }
 
                     println("🌙 MBAKVpnService: starting VPNtoServer loop")
                     thread(start = true)
                     {
-                        runVPNtoServer()
+                        if (this.usePluggableTransport)
+                        {
+                            runVPNtoServer(inputStream, this.shadowConnection!!)
+                        }
+                        else
+                        {
+                            runVPNtoServer(inputStream, this.transmissionConnection!!)
+                        }
                     }
+
                     println("We have successfully created a VPN tunnel.")
                     // We have successfully created a VPN tunnel
                     broadcastStatus(vpnStatusNotification, VPN_CONNECTED_STATUS, true)
@@ -168,119 +184,67 @@ class MBAKVpnService : VpnService()
         return prepareBuilder("10.0.0.1")
     }
 
-    fun runVPNtoServer()
+    fun runVPNtoServer(vpnInputStream: FileInputStream, serverConnection: Connection)
     {
         while (true)
         {
+            println("🪶 runVPNtoServer looping...")
             // Leave the loop if the socket is closed
-            if (transmissionConnection?.tcpConnection != null && transmissionConnection!!.tcpConnection!!.isClosed)
+            try
             {
-                break
+                println("🪶 calling vpnToServer() with $vpnInputStream...")
+                vpnToServer(vpnInputStream, serverConnection)
+                println("Returned from vpnToServer() 🪶")
             }
-            else if (transmissionConnection != null && inputStream != null)
+            catch (vpnToServerError: Exception)
             {
-                try
-                {
-                    vpnToServer(inputStream!!)
-                }
-                catch (vpnToServerError: Exception)
-                {
-                    println("🌙 MBAKVpnService.runVPNtoServer: Error: $vpnToServerError")
-                    stopVPN()
-                    break
-                }
-            }
-            else
-            {
+                println("🌙 MBAKVpnService.runVPNtoServer: Error: $vpnToServerError")
+                stopVPN()
                 break
             }
         }
+
+        println("Exited runVPNtoServer loop 🪶")
     }
 
-    fun vpnToServer(vpnInputStream: FileInputStream)
+    fun vpnToServer(vpnInputStream: FileInputStream, serverConnection: Connection)
     {
-        try {
-            var readBuffer = ByteArray(2048)
-            val numberOfBytesReceived = vpnInputStream.read(readBuffer)
-            readBuffer = readBuffer.dropLast(readBuffer.size - numberOfBytesReceived).toByteArray()
+        var readBuffer = ByteArray(2048)
+        val numberOfBytesReceived = vpnInputStream.read(readBuffer)
+        readBuffer = readBuffer.dropLast(readBuffer.size - numberOfBytesReceived).toByteArray()
 
-            if (numberOfBytesReceived < 1)
-            {
-                return
-            }
-            else
-            {
-//                println("🌖 MoonbounceAndroid.vpnToServer: inputStream.readBytes() received ${numberOfBytesReceived} bytes")
-                if (transmissionConnection == null)
-                {
-                    println("vpnToServer(): Transmission connection is closed")
-                    return
-                }
-                else
-                {
-                    try
-                    {
-                        if (this.usePluggableTransport) {
-                            shadowConnection!!.writeWithLengthPrefix(readBuffer, sizeInBits)
-                        } else {
-                            transmissionConnection!!.writeWithLengthPrefix(readBuffer, sizeInBits)
-                        }
-                    }
-                    catch (vpnToServerWriteError: Exception)
-                    {
-                        println("\uD83C\uDF16 MoonbounceAndroid.vpnToServer: vpnToServerWriteError")
-                        throw vpnToServerWriteError
-                    }
-                }
-            }
-        }
-        catch (vpnToServerReadError: Exception)
+        if (numberOfBytesReceived < 1)
         {
-            println("MoonbounceAndroid.vpnToServer: vpnToServerReadError")
-            throw vpnToServerReadError
+            println("vpnToServer read 0 bytes from the VPN input stream.")
+            return
         }
+
+        serverConnection.writeWithLengthPrefix(readBuffer, sizeInBits)
     }
 
-    fun runServerToVPN()
+    fun runServerToVPN(vpnOutputStream: FileOutputStream, serverConnection: Connection)
     {
         while(true)
         {
+            println("🐾 runServerToVPN looping...")
             // Leave loop if the socket is closed
-            if (transmissionConnection?.tcpConnection != null && transmissionConnection!!.tcpConnection!!.isClosed)
+            try
             {
+                serverToVPN(vpnOutputStream, serverConnection)
+            }
+            catch (serverToVPNError: Exception)
+            {
+                println("MoonbounceAndroid.serverToVPN Error: $serverToVPNError")
+                stopVPN()
                 break
             }
-            else if (transmissionConnection != null && outputStream != null)
-            {
-                try
-                {
-                    val currentTime = timeSource.markNow()
-                    val elapsedTime = currentTime - lastVpnWrite
-
-                    if (elapsedTime.inWholeMilliseconds < 10)
-                    {
-                        //Thread.sleep(10 - elapsedTime.inWholeMilliseconds)
-                    }
-                    if (usePluggableTransport) {
-                        serverToVPN(outputStream!!, shadowConnection!!)
-                    } else {
-                        serverToVPN(outputStream!!, transmissionConnection!!)
-                    }
-                    lastVpnWrite = currentTime
-                }
-                catch (serverToVPNError: Exception)
-                {
-                    println("MoonbounceAndroid.serverToVPN Error: $serverToVPNError")
-                    stopVPN()
-                    break
-                }
-            }
         }
+        println("Exited runServerToVPN loop 🐾")
     }
 
-    fun serverToVPN(vpnOutputStream: FileOutputStream, connection: Connection)
+    fun serverToVPN(vpnOutputStream: FileOutputStream, serverConnection: Connection)
     {
-        val messageData = connection.readWithLengthPrefix(sizeInBits)
+        val messageData = serverConnection.readWithLengthPrefix(sizeInBits)
 
         if (messageData == null)
         {
@@ -484,13 +448,13 @@ class MBAKVpnService : VpnService()
         }
 
         try {
-            outputStream?.close()
+//            outputStream?.close()
         } catch (ex:IOException) {
             Log.e(TAG, "outputStream.close()", ex)
         }
 
         try {
-            inputStream?.close()
+//            inputStream?.close()
         } catch (ex:IOException) {
             Log.e(TAG, "inputStream.close()", ex)
         }
