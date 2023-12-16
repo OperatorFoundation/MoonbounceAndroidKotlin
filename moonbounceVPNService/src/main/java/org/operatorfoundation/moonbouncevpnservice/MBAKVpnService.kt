@@ -12,8 +12,6 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import androidx.core.app.ServiceCompat.stopForeground
-import androidx.core.content.ContextCompat.getSystemService
 import org.operatorfoundation.shadow.ShadowConfig
 import org.operatorfoundation.shadow.ShadowConnection
 import org.operatorfoundation.transmission.Connection
@@ -24,7 +22,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.net.InetAddress
 import kotlin.concurrent.thread
-import kotlin.time.TimeSource
 
 val SERVER_PORT = "ServerPort"
 val SERVER_IP = "ServerIP"
@@ -230,7 +227,9 @@ class MBAKVpnService : VpnService()
             // Leave loop if the socket is closed
             try
             {
+                println("🐾 calling serverToVPN()...")
                 serverToVPN(vpnOutputStream, serverConnection)
+                println("Returned from serverToVPN() 🐾")
             }
             catch (serverToVPNError: Exception)
             {
@@ -246,6 +245,8 @@ class MBAKVpnService : VpnService()
     {
         val messageData = serverConnection.readWithLengthPrefix(sizeInBits)
 
+        Thread.sleep(1000)
+
         if (messageData == null)
         {
             println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
@@ -254,9 +255,7 @@ class MBAKVpnService : VpnService()
         }
         else
         {
-//            println("🌖 MoonbounceAndroid.serverToVPN: inputStream.readBytes() received ${messageData.size} bytes")
-            vpnOutputStream.write(messageData)
-//            println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: finished writing ${messageData.size} bytes to outputStream.")
+//            vpnOutputStream.write(messageData)
         }
     }
 
