@@ -354,10 +354,6 @@ class MBAKVpnService : VpnService()
         {
             usePluggableTransport = maybeUsePluggableTransports
         }
-        else
-        {
-            println("MBAKVpnService: Not using pluggable transports.")
-        }
 
         if (maybeDisallowedApps != null)
         {
@@ -419,50 +415,43 @@ class MBAKVpnService : VpnService()
 
     fun stopVPN()
     {
-        cleanUp()
+        cleanup()
         stopSelf()
     }
 
-    fun cleanUp()
+    fun cleanup()
     {
-        println("Entered the cleanUp function.")
+        println("cleanUp() called.")
         try {
             parcelFileDescriptor?.close()
         } catch (ex: IOException) {
-            Log.e(TAG, "parcelFileDescriptor.close()", ex)
+            Log.e(TAG, "Calling parcelFileDescriptor.close()", ex)
         }
 
         try {
             transmissionConnection?.close()
         } catch (ex:IOException) {
-            Log.e(TAG, "flowerConnection.close()", ex)
+            Log.e(TAG, "Calling TransmissionConnection.close()", ex)
         }
 
         try {
-//            outputStream?.close()
+            shadowConnection?.close()
         } catch (ex:IOException) {
-            Log.e(TAG, "outputStream.close()", ex)
-        }
-
-        try {
-//            inputStream?.close()
-        } catch (ex:IOException) {
-            Log.e(TAG, "inputStream.close()", ex)
+            Log.e(TAG, "Calling ShadowConnection.close()", ex)
         }
 
         stopForeground(STOP_FOREGROUND_REMOVE)
-        println("Leaving the cleanUp function.")
     }
 
     override fun onDestroy()
     {
-        cleanUp()
+        cleanup()
         super.onDestroy()
     }
 
     override fun onRevoke()
     {
-        cleanUp()
+        cleanup()
         super.onRevoke()
     }
 }
