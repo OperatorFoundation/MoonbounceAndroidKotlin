@@ -21,16 +21,17 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.InetAddress
+import java.util.logging.Logger
 import kotlin.concurrent.thread
 
-val SERVER_PORT = "ServerPort"
-val SERVER_IP = "ServerIP"
-val SERVER_PUBLIC_KEY = "ServerPublicKey"
-val DISALLOWED_APPS = "DisallowedApp"
+const val SERVER_PORT = "ServerPort"
+const val SERVER_IP = "ServerIP"
+const val SERVER_PUBLIC_KEY = "ServerPublicKey"
+const val DISALLOWED_APPS = "DisallowedApp"
 const val EXCLUDE_ROUTES = "ExcludeRoute"
-val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
-val STOP_VPN_ACTION = "StopMoonbounce"
-val START_VPN_ACTION = "StartMoonbounce"
+const val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
+const val STOP_VPN_ACTION = "StopMoonbounce"
+const val START_VPN_ACTION = "StartMoonbounce"
 
 class MBAKVpnService : VpnService()
 {
@@ -39,8 +40,6 @@ class MBAKVpnService : VpnService()
     var parcelFileDescriptor: ParcelFileDescriptor? = null
     var transmissionConnection: TransmissionConnection? = null
     var shadowConnection: ShadowConnection? = null
-//    var inputStream: FileInputStream? = null
-//    var outputStream: FileOutputStream? = null
     var transportServerIP = ""
     var transportServerPort = 1234
     var transportServerPublicKey: String? = null
@@ -53,7 +52,6 @@ class MBAKVpnService : VpnService()
     private var builder: Builder = Builder()
     private var disallowedApps: Array<String>? = null
     private var excludeRoutes: Array<String>? = null
-//    private var timeSource = TimeSource.Monotonic
 
     companion object
     {
@@ -134,7 +132,7 @@ class MBAKVpnService : VpnService()
                     {
                         val serverAddress = "$transportServerIP:$transportServerPort"
                         val config = ShadowConfig(transportServerPublicKey!!, "Darkstar", serverAddress)
-                        this.shadowConnection = ShadowConnection(this.transmissionConnection!!, config, null)
+                        this.shadowConnection = ShadowConnection(config, Logger.getLogger("MoonbounceShadowLogger"), this.transmissionConnection!!)
                     }
 
                     println("🌙 MBAKVpnService: starting ServerToVPN loop")
@@ -189,19 +187,15 @@ class MBAKVpnService : VpnService()
             // Leave the loop if the socket is closed
             try
             {
-                println("🪶 calling vpnToServer() with $vpnInputStream...")
                 vpnToServer(vpnInputStream, serverConnection)
-                println("Returned from vpnToServer() 🪶")
             }
             catch (vpnToServerError: Exception)
             {
-                println("🌙 MBAKVpnService.runVPNtoServer: Error: $vpnToServerError")
+                println("🪶‼️ MBAKVpnService.runVPNtoServer: Error: $vpnToServerError")
                 stopVPN()
                 break
             }
         }
-
-        println("Exited runVPNtoServer loop 🪶")
     }
 
     fun vpnToServer(vpnInputStream: FileInputStream, serverConnection: Connection)
@@ -227,35 +221,33 @@ class MBAKVpnService : VpnService()
             // Leave loop if the socket is closed
             try
             {
-                println("🐾 calling serverToVPN()...")
                 serverToVPN(vpnOutputStream, serverConnection)
-                println("Returned from serverToVPN() 🐾")
             }
             catch (serverToVPNError: Exception)
             {
-                println("MoonbounceAndroid.serverToVPN Error: $serverToVPNError")
+                println("🐾‼️ MoonbounceAndroid.serverToVPN Error: $serverToVPNError")
                 stopVPN()
                 break
             }
         }
-        println("Exited runServerToVPN loop 🐾")
     }
 
     fun serverToVPN(vpnOutputStream: FileOutputStream, serverConnection: Connection)
     {
         val messageData = serverConnection.readWithLengthPrefix(sizeInBits)
 
-        Thread.sleep(1000)
+        // FIXME: DEBUG ONLY
+        Thread.sleep(100)
 
         if (messageData == null)
         {
-            println("\uD83C\uDF16 MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
+            println("🐾‼️ MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
             stopVPN()
             return
         }
         else
         {
-//            vpnOutputStream.write(messageData)
+            vpnOutputStream.write(messageData)
         }
     }
 
