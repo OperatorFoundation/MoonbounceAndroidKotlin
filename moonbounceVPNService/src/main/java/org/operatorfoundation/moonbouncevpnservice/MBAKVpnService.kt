@@ -202,15 +202,24 @@ class MBAKVpnService : VpnService()
     {
         var readBuffer = ByteArray(2048)
         val numberOfBytesReceived = vpnInputStream.read(readBuffer)
-        readBuffer = readBuffer.dropLast(readBuffer.size - numberOfBytesReceived).toByteArray()
 
-        if (numberOfBytesReceived < 1)
+        if (numberOfBytesReceived == -1)
+        {
+            println("vpnToServer read -1 bytes from the VPN input stream.")
+            throw java.io.IOException()
+        }
+
+        if (numberOfBytesReceived == 0)
         {
             println("vpnToServer read 0 bytes from the VPN input stream.")
+            Thread.sleep(500)
             return
         }
 
+        readBuffer = readBuffer.dropLast(readBuffer.size - numberOfBytesReceived).toByteArray()
         serverConnection.writeWithLengthPrefix(readBuffer, sizeInBits)
+
+        return
     }
 
     fun runServerToVPN(vpnOutputStream: FileOutputStream, serverConnection: Connection)
