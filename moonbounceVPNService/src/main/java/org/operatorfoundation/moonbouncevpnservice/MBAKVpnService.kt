@@ -262,6 +262,7 @@ class MBAKVpnService : VpnService()
             .addAddress(ipv4AssignmentString, subnetMask) // Local IP Assigned by server on handshake
             .addDnsServer(dnsServerIP)
             .addRoute(route, 0)
+            .setBlocking(true)
 
         disallowedApps?.let { requestedAppsToExclude ->
 
