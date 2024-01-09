@@ -183,7 +183,6 @@ class MBAKVpnService : VpnService()
     {
         while (true)
         {
-            println("🪶 runVPNtoServer looping...")
             // Leave the loop if the socket is closed
             try
             {
@@ -211,8 +210,6 @@ class MBAKVpnService : VpnService()
 
         if (numberOfBytesReceived == 0)
         {
-            println("vpnToServer read 0 bytes from the VPN input stream.")
-            Thread.sleep(500)
             return
         }
 
@@ -226,7 +223,6 @@ class MBAKVpnService : VpnService()
     {
         while(true)
         {
-            println("🐾 runServerToVPN looping...")
             // Leave loop if the socket is closed
             try
             {
@@ -244,9 +240,6 @@ class MBAKVpnService : VpnService()
     fun serverToVPN(vpnOutputStream: FileOutputStream, serverConnection: Connection)
     {
         val messageData = serverConnection.readWithLengthPrefix(sizeInBits)
-
-        // FIXME: DEBUG ONLY
-        Thread.sleep(100)
 
         if (messageData == null)
         {
