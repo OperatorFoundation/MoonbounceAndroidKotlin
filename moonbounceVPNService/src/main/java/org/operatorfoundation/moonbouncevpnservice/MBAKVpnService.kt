@@ -21,8 +21,10 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.InetAddress
+import java.nio.ByteBuffer
 import java.util.logging.Logger
 import kotlin.concurrent.thread
+import kotlin.time.TimeSource
 
 const val SERVER_PORT = "ServerPort"
 const val SERVER_IP = "ServerIP"
@@ -36,6 +38,12 @@ const val START_VPN_ACTION = "StartMoonbounce"
 class MBAKVpnService : VpnService()
 {
     val sizeInBits = 32
+    val maxBatchSize =  250 // bytes
+    val maxPacketSize = 2048
+    val timeoutDuration = 250 // milliseconds
+    var batchBuffer = byteArrayOf()
+    var lastPacketSentTime = TimeSource.Monotonic.markNow()
+
     val TAG = "MBAKVpnService"
     var parcelFileDescriptor: ParcelFileDescriptor? = null
     var transmissionConnection: TransmissionConnection? = null
@@ -70,7 +78,6 @@ class MBAKVpnService : VpnService()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
-        print("****** onStartCommand called *******")
         super.onStartCommand(intent, flags, startId)
 
         if (intent != null)
@@ -108,7 +115,7 @@ class MBAKVpnService : VpnService()
                 // Otherwise its outgoing packets will be sent back to the VPN interface and cause an infinite loop.
                 if (this.transmissionConnection == null)
                 {
-                    throw Error("Failed to create a connection to the server.")
+                    throw Error("🌙 Failed to create a connection to the server.")
                 }
 
                 protect(transmissionConnection!!.tcpConnection!!)
@@ -135,7 +142,7 @@ class MBAKVpnService : VpnService()
                         this.shadowConnection = ShadowConnection(config, Logger.getLogger("MoonbounceShadowLogger"), this.transmissionConnection!!)
                     }
 
-                    println("🌙 MBAKVpnService: starting ServerToVPN loop")
+//                    println("🌙 MBAKVpnService: starting ServerToVPN loop")
                     thread(start = true)
                     {
                         if (this.usePluggableTransport)
@@ -148,7 +155,7 @@ class MBAKVpnService : VpnService()
                         }
                     }
 
-                    println("🌙 MBAKVpnService: starting VPNtoServer loop")
+//                    println("🌙 MBAKVpnService: starting VPNtoServer loop")
                     thread(start = true)
                     {
                         if (this.usePluggableTransport)
@@ -161,7 +168,6 @@ class MBAKVpnService : VpnService()
                         }
                     }
 
-                    println("We have successfully created a VPN tunnel.")
                     // We have successfully created a VPN tunnel
                     broadcastStatus(vpnStatusNotification, VPN_CONNECTED_STATUS, true)
                 }
@@ -199,7 +205,11 @@ class MBAKVpnService : VpnService()
 
     fun vpnToServer(vpnInputStream: FileInputStream, serverConnection: Connection)
     {
-        var readBuffer = ByteArray(2048)
+        val now = TimeSource.Monotonic.markNow()
+        val packetLengthSize = sizeInBits/8 // In bytes
+        val lengthBuffer = ByteBuffer.allocate(packetLengthSize)
+        var readBuffer = ByteArray(maxPacketSize)
+
         val numberOfBytesReceived = vpnInputStream.read(readBuffer)
 
         if (numberOfBytesReceived == -1)
@@ -214,7 +224,30 @@ class MBAKVpnService : VpnService()
         }
 
         readBuffer = readBuffer.dropLast(readBuffer.size - numberOfBytesReceived).toByteArray()
-        serverConnection.writeWithLengthPrefix(readBuffer, sizeInBits)
+
+        /// Batching ///
+        // Create the packet size prefix
+        lengthBuffer.putInt(numberOfBytesReceived)
+        // Add the packet size prefix
+        batchBuffer += lengthBuffer.array()
+        // Add the packet payload
+        batchBuffer += readBuffer
+
+        // If we have enough data, send it
+        if (batchBuffer.size >= maxBatchSize)
+        {
+            serverConnection.write(batchBuffer)
+
+//            println("🙀🙀Wrote ${batchBuffer.size} bytes to the server connection.")
+            batchBuffer = byteArrayOf()
+        }
+        else if ((now - lastPacketSentTime).inWholeMilliseconds >= timeoutDuration)
+        {
+            serverConnection.write(batchBuffer)
+
+//            println("\uD83D\uDE40\uD83D\uDE40 TIMEOUT!! Wrote ${batchBuffer.size} bytes to the server connection.")
+            batchBuffer = byteArrayOf()
+        }
 
         return
     }
@@ -294,8 +327,6 @@ class MBAKVpnService : VpnService()
 
         val parcelFileDescriptor = builder.establish()
 
-        println("🌙 finished setting up the VPNService builder")
-
         return parcelFileDescriptor
     }
 
@@ -327,7 +358,6 @@ class MBAKVpnService : VpnService()
         }
         else
         {
-            println("🌙 MBAKVpnService: MBAKVpnService intent was null")
             return false
         }
 
@@ -401,7 +431,7 @@ class MBAKVpnService : VpnService()
         val notification: Notification = Notification.Builder(this, notificationChannelId)
             .setSmallIcon(R.drawable.crecent_moon)
             .setContentTitle("VPN Service Channel")
-            .setContentText("VPN Tunnel is ON. Navigate to the MBAK App to turn it off.")
+            .setContentText("The VPN Tunnel is ON. Navigate to the VPN App to turn it off.")
             .setContentIntent(pendingIntent)
             .build()
 
@@ -424,7 +454,6 @@ class MBAKVpnService : VpnService()
 
     fun cleanup()
     {
-        println("cleanUp() called.")
         try {
             parcelFileDescriptor?.close()
         } catch (ex: IOException) {
