@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk 34
+    compileSdk 33
 
     defaultConfig {
         namespace = "org.operatorfoundation.moonbounceAndroidKotlin"
         applicationId "org.operatorfoundation.moonbounceAndroidKotlin"
-        minSdk 29
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"

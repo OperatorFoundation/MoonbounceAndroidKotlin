@@ -139,7 +139,8 @@ class MBAKVpnService : VpnService()
                     {
                         val serverAddress = "$transportServerIP:$transportServerPort"
                         val config = ShadowConfig(transportServerPublicKey!!, "Darkstar", serverAddress)
-                        this.shadowConnection = ShadowConnection(config, Logger.getLogger("MoonbounceShadowLogger"), this.transmissionConnection!!)
+                        val context = applicationContext
+                        this.shadowConnection = ShadowConnection(config, context, Logger.getLogger("MoonbounceShadowLogger"), this.transmissionConnection!!)
                     }
 
 //                    println("🌙 MBAKVpnService: starting ServerToVPN loop")
