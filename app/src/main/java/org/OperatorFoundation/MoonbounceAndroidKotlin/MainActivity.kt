@@ -178,42 +178,17 @@ class MainActivity : AppCompatActivity()
     {
         val appManager = AppManager(applicationContext)
         val installedApps = appManager.getApps()
-//        val appIDs = mutableListOf<String>()
 
         println("Installed applications:")
         for (app in installedApps)
         {
             println("\napp name - ${app.name}")
             println("app id - ${app.id}")
-//            appIDs.add(app.id)
         }
-
-//        println("### appNames List: ${appIDs.count()} items")
-//        val choices: Array<String> = appIDs.toTypedArray()
-//        println("### Choices Array: ${choices.count()} items")
-//        val preSelectedItems: BooleanArray = BooleanArray(appIDs.count(), init = {false})
-//        val selectedItems = mutableListOf<String>()
-//
-//        MaterialAlertDialogBuilder(this)
-//            .setTitle("Installed Apps")
-//            .setMessage("Select any apps that should not use the VPN.")
-////            .setMultiChoiceItems(choices, preSelectedItems) { dialog, which, checked ->
-////                if (checked)
-////                {
-////                    selectedItems.add(choices[which])
-////                    println("Adding ${choices[which]} to the disallowed apps list.")
-////                }
-////            }
-//            .setPositiveButton("OK"){ _: DialogInterface, _: Int ->
-//                println(">>>>> Apps selected to exclude: $choices")
-//            }
-//            .show()
     }
 
     private fun testTCPTapped()
     {
-        println("Test TCP tapped.")
-
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
         networkTests.tcpTest()
@@ -221,8 +196,6 @@ class MainActivity : AppCompatActivity()
 
     private fun testTCPConnectTapped()
     {
-        println("Test TCP Connect tapped.")
-
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
         networkTests.tcpConnectTest()
@@ -230,8 +203,6 @@ class MainActivity : AppCompatActivity()
 
     private fun testTCPBigDataButtonTapped()
     {
-        println("Test TCP Big Data tapped.")
-
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
         networkTests.tcpTest2k()
@@ -239,8 +210,6 @@ class MainActivity : AppCompatActivity()
 
     private fun testUDPTapped()
     {
-        println("Test UDP tapped.")
-
         ipAddress = ipEditText.text.toString()
         networkTests.host = ipAddress
         networkTests.udpTest()
@@ -248,25 +217,18 @@ class MainActivity : AppCompatActivity()
 
     private fun testHTTPTapped()
     {
-        println("Test HTTP tapped.")
-
         networkTests.testHTTP()
     }
 
     private fun testResolveDNS()
     {
-        println("Test Resolve DNS tapped.")
-
         networkTests.testResolveDNS()
     }
 
     fun connectTapped()
     {
-        println("Connect tapped.")
-
         if (ipEditText.text.toString().isBlank() || portEditText.text.toString().isBlank())
         {
-            println("A valid server IP and port are required to enable VPN services.")
             resultText.text = "A valid server IP and port are required to enable VPN services."
             vpnConnectedSwitch.isChecked = false
             return
@@ -302,7 +264,6 @@ class MainActivity : AppCompatActivity()
     fun disconnectTapped()
     {
         vpnConnectedSwitch.text = "Connect VPN"
-        println("User request to close the tunnel.")
         stopService(moonbounceVPNIntent)
         moonbounceVPNIntent.action = STOP_VPN_ACTION
         startService(moonbounceVPNIntent)

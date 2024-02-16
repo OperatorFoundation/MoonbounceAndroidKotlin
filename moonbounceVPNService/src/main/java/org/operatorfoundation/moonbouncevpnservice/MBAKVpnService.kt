@@ -143,7 +143,6 @@ class MBAKVpnService : VpnService()
                         this.shadowConnection = ShadowConnection(config, context, Logger.getLogger("MoonbounceShadowLogger"), this.transmissionConnection!!)
                     }
 
-//                    println("🌙 MBAKVpnService: starting ServerToVPN loop")
                     thread(start = true)
                     {
                         if (this.usePluggableTransport)
@@ -156,7 +155,6 @@ class MBAKVpnService : VpnService()
                         }
                     }
 
-//                    println("🌙 MBAKVpnService: starting VPNtoServer loop")
                     thread(start = true)
                     {
                         if (this.usePluggableTransport)
@@ -216,7 +214,7 @@ class MBAKVpnService : VpnService()
         if (numberOfBytesReceived == -1)
         {
             println("vpnToServer read -1 bytes from the VPN input stream.")
-            throw java.io.IOException()
+            throw IOException()
         }
 
         if (numberOfBytesReceived == 0)
@@ -238,15 +236,11 @@ class MBAKVpnService : VpnService()
         if (batchBuffer.size >= maxBatchSize)
         {
             serverConnection.write(batchBuffer)
-
-//            println("🙀🙀Wrote ${batchBuffer.size} bytes to the server connection.")
             batchBuffer = byteArrayOf()
         }
         else if ((now - lastPacketSentTime).inWholeMilliseconds >= timeoutDuration)
         {
             serverConnection.write(batchBuffer)
-
-//            println("\uD83D\uDE40\uD83D\uDE40 TIMEOUT!! Wrote ${batchBuffer.size} bytes to the server connection.")
             batchBuffer = byteArrayOf()
         }
 

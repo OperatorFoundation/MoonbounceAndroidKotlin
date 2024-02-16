@@ -26,9 +26,7 @@ class ExampleInstrumentedTest {
     fun pluginStopService() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-//        assertEquals("org.operatorfoundation.moonbouncevpnservice.test", appContext.packageName)
-
-        val moonbounceKotlin = MoonbounceKotlin(appContext, "164.92.71.230", 1234)
+        val moonbounceKotlin = MoonbounceKotlin(appContext, "", 1234)
         moonbounceKotlin.startVPN()
         moonbounceKotlin.stopVPN()
     }

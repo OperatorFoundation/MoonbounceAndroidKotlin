@@ -47,8 +47,6 @@ class MoonbounceKotlin(val context: Context, var ipAddress: String, var serverPo
 
     fun stopVPN(): Boolean
     {
-        println("----------->>>>>>>>>>>>> Plugin Stop Service called")
-
         if (vpnServiceIntent == null)
         {
             // The intent doesn't exist so there is nothing to stop

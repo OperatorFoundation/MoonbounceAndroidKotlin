@@ -71,8 +71,6 @@ class NetworkTests (val context: Context)
     {
         val exceedMTUSize = 2500
         val someBytes = ByteArray(exceedMTUSize)
-
-        // TODO: Make tcpTest take a byte array to send
     }
 
     fun tcpTest()
@@ -131,8 +129,6 @@ class NetworkTests (val context: Context)
         {
             try
             {
-                val testString = "Catbus is TCP tops!"
-
                 val testConnection = TransmissionConnection(host, tcpEchoPort, ConnectionType.TCP, null)
                 println("🌙 TCP Connect test: Transmission Connection created. TCP Connect test succeeded!")
                 testConnection.close()
@@ -195,26 +191,14 @@ class NetworkTests (val context: Context)
 
     fun testHTTP()
     {
-//        // http://operatorfoundation.org/images/logo.jpg
-//        //GET / HTTP/1.0
-//        //\r\n\]r\n
-//
-//        URL("http://operatorfoundation.org/images/logo.jpg").run {
-//            openConnection().run {
-//                this as HttpURLConnection
-//                val response = inputStream.bufferedReader().readText()
-//                println("testHTTP received a response: $response")
-//            }
-//        }
-
         println("🌙 Launching HTTP Test")
-        println("\uD83C\uDF19 host and port: 185.199.109.153: 80")
+        println("\uD83C\uDF19 host and port: $host: 80")
 
         thread(start = true)
         {
             try
             {
-                val transmissionConnection = TransmissionConnection("185.199.109.153", 80, ConnectionType.TCP, null)
+                val transmissionConnection = TransmissionConnection(host, 80, ConnectionType.TCP, null)
                 println("🌙 HTTP test: Transmission Connection created.")
 
                 transmissionConnection.write("GET / HTTP/1.0\r\n\r\n".toByteArray())
@@ -251,7 +235,7 @@ class NetworkTests (val context: Context)
             val address = InetAddress.getByName("operatorfoundation.org")
             println("🌙 testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
 
-            if (address.hostAddress == "185.199.110.153")
+            if (address.hostAddress == host)
             {
                 println("🌙 testResolveDNS succeeded! ✨")
                 broadcastStatus(dnsTestNotification, DNS_TEST_STATUS, true)
@@ -271,27 +255,4 @@ class NetworkTests (val context: Context)
         intent.action = action
         context.sendBroadcast(intent)
     }
-
-
-
-//    fun tcpBroadcastMessage(success: Boolean)
-//    {
-//        println("*******BROADCASTING TCP MESSAGE")
-//        Intent().also { intent ->
-//            intent.action = broadcastTCPAction
-//            intent.putExtra(isSuccessful, success)
-//            context.sendBroadcast(intent)
-//        }
-//    }
-//
-//    fun udpBroadcastMessage(success: Boolean)
-//    {
-//        println("*******BROADCASTING UDP MESSAGE")
-//
-//        Intent().also { intent ->
-//            intent.action = broadcastUDPAction
-//            intent.putExtra(udpIsSuccessful, success)
-//            context.sendBroadcast(intent)
-//        }
-//    }
 }

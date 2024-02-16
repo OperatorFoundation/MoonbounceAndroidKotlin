@@ -10,7 +10,6 @@ android {
         namespace = "org.operatorfoundation.moonbounceAndroidKotlin"
         applicationId "org.operatorfoundation.moonbounceAndroidKotlin"
         minSdk 26
-        targetSdk 33
         versionCode 1
         versionName "1.0"
 
