@@ -12,6 +12,7 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import androidx.annotation.RequiresApi
 import org.operatorfoundation.shadow.ShadowConfig
 import org.operatorfoundation.shadow.ShadowConnection
 import org.operatorfoundation.transmission.Connection
@@ -402,6 +403,7 @@ class MBAKVpnService : VpnService()
         return true
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createForegroundNotification()
     {
         val notificationChannelId = "VPN Service Channel"

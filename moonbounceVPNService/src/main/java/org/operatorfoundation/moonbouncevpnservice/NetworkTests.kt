@@ -192,13 +192,13 @@ class NetworkTests (val context: Context)
     fun testHTTP()
     {
         println("🌙 Launching HTTP Test")
-        println("\uD83C\uDF19 host and port: $host: 80")
+        println("\uD83C\uDF19 host and port: \"185.199.109.153\": 80")
 
         thread(start = true)
         {
             try
             {
-                val transmissionConnection = TransmissionConnection(host, 80, ConnectionType.TCP, null)
+                val transmissionConnection = TransmissionConnection("185.199.109.153", 80, ConnectionType.TCP, null)
                 println("🌙 HTTP test: Transmission Connection created.")
 
                 transmissionConnection.write("GET / HTTP/1.0\r\n\r\n".toByteArray())
@@ -235,7 +235,7 @@ class NetworkTests (val context: Context)
             val address = InetAddress.getByName("operatorfoundation.org")
             println("🌙 testResolveDNS: got an address from operatorfoundation.org: ${address.hostAddress}")
 
-            if (address.hostAddress == host)
+            if (address.hostAddress == "185.199.109.153")
             {
                 println("🌙 testResolveDNS succeeded! ✨")
                 broadcastStatus(dnsTestNotification, DNS_TEST_STATUS, true)
