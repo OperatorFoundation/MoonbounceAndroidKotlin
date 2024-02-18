@@ -2,12 +2,53 @@
 
 [Operator](https://operatorfoundation.org) makes useable tools to help people around the world with censorship, security, and privacy.
 
-# MoonbounceAndroidKotlin
-Moonbounce is a VPN Service library for Android devices written in Kotlin. This VPN service uses the [Flower](https://github.com/OperatorFoundation/FlowerAndroid.git) protocol.
- 
-The server side companion to this library is [Persona](https://github.com/OperatorFoundation/Persona.git).
+# The Moonbounce Project
+The Moonbounce Project is an initiative covering several clients, servers, and libraries. The goal of the project is to provide a simple VPN service that integrates
+Pluggable Transport technology. This allows the Moonbounce VPN to operate on network with restrictive Internet censorship that blocks VPN protocols such as OpenVPN
+and Wireguard. This project, MoonbounceAndroidKotlin, is one of several components of the Moonbounce project.
 
-## Starting the VPN Service
+# MoonbounceAndroidKotlin
+MoonbounceAndroidKotlin (MBAK) is a demo application showing how to build an Android client, in the Kotlin programming language, for the Moonbounce VPN initiative.
+This application is just a demo and is not meant to be used by end users. The target audience for this demo is other developers that want to make their own Moonbounce-compatible
+VPN client for Android. As all of the Moonbounce code is licensed under an unrestrictive MIT Open Source license, anyone is free to use this source code to make their
+own VPN client
+
+Please note some differences between the Moonbounce VPN client and other VPN clients. First, the Moonbounce project does not use an existing legacy VPN
+protocol such as OpenVPN or Wireguard. These protocols have unfortunately been implemented in such a way that it would be difficult to add Pluggable Transport support to them.
+Instead, Moonbounce uses its own, very simple VPN protocol that just sends IPv4 packets encapsulated into a data stream, with only minimal length-prefix framing. All
+other aspects of the protocol, such as encryption and authentication, are handled by the Pluggable Transports layer. Therefore, in order to run the Moonbounce client, you will
+also need a compatible server. The associated server for the Moonbounce project is called [Persona](https://github.com/OperatorFoundation/Persona.git). Additionally, for each Pluggable
+Transport used by the client, an associated Pluggable Transport server will also need to be run. The Persona server does not accept Pluggable Transport traffic directly, instead
+the Pluggable Transport layer of the traffic is handled by a proxy server such as Shapeshifter Dispatcher, which forwards the Moonbounce traffic to the Persona server. 
+
+## Using the Demo Application
+
+In order to use the demo application, you must provide the IP and port of the server. There are two modes for testing purposes: with and without Pluggable Transports. If you want to test
+without Pluggable Transports, provide the IP and port of the Persona server. If you want to test with Pluggable Transports, provide the IP and port of the Pluggable Transport server, such
+as Shapeshifter Dispatcher. Please make sure that you open the correct ports on your firewalls. There are some built-in tests you can run inside of the demo application. You can also test
+VPN functionality by leaving the demo application and going to a web browser application. Sites such as "whatismyip.com" can show you whether your traffic is going through the VPN or
+directly to the Internet.
+
+Important information about using the demo application:
+- It runs on Android SDK levels 29-33 (Android release versions 10-13). While it may run on other versions of Android, please do not report bugs about that because other SDK versions are out of scope for the project.
+- You need a Persona server and a Pluggable Transport server (such as Shapeshifter Dispatcher).
+- For Pluggable Transports, we use the Shadow transport for the demo application. You will need to paste in the public key of the Shadow server.
+- Also available to users are fields to exclude specific apps and a routes from using the VPN, in which case they will go directly to the Internet.
+- During the initial connection the user will have to give the application permission to run in the background. Once permission is granted the user will see a key icon appear in the toolbar of the phone (To access the notifications pull down on the top of the phone screen). You are now connected to your VPN.
+
+### Disallow App (Demo)
+
+Should you prefer to disallow certain apps from using the VPN tunnel, enter the app IDs in the text field provided seperated by spaces. To determine the correct name of the application you want to disallow, the PRINT INSTALLED APPS button will print a list of the names and IDs of all the apps installed on the device you’re running to your IDE.
+
+### Exclude Route (Demo)
+
+Additionally, Moonbounce can exclude specific routes, enter the IP addresses you wish to exclude, seperated by spaces, in the text field provided.
+
+## Building Your Own VPN Application
+
+The demo application is just a starting place to build your own VPN application with Pluggable Transport support.
+
+### Starting the VPN Service
 
 You must make sure that you have requested (and have been granted) the correct permissions in order to start a VPN service. See the demo app for an example of how to do this.
 
@@ -36,12 +77,11 @@ moonbounceVPNIntent.putExtra(SERVER_PORT, 1111) // Use your actual Persona serve
 startService(moonbounceVPNIntent)
 ```
 
-
-## Split Proxy Usages
+### Split Proxy Usages
 
 The Moonbounce library can be used to create two different split tunneling options. One that allows one or more applications to be disallowed from tunneling, and one that allows one or more routes (IP Addresses) to be excluded from tunneling. Split tunneling allows users to use two different network connections simultaneously. Users can determine which applications and/or routes they would like to exclude. Excluded apps and routes will connect to the internet in the usual way while all other traffic will be sent through the VPN tunnel. 
 
-### Disallow Applications from Using the VPN
+#### Disallow Applications from Using the VPN
 
 Note: A minimum Android API of 26 is required to use this feature.
 
@@ -59,7 +99,7 @@ startService(moonbounceVPNIntent)
 
 The demo application has a button that prints the package names of all applications installed on the device. This can be used to find the package name of the application you wish to disallow. Use this in lieu of the “disallowedApp” in the example above.
 
-### Exclude Routes
+#### Exclude Routes
 
 Note: A minimum Android API of 33 is required to use this feature.
 
@@ -75,9 +115,9 @@ moonbounceVPNIntent.putExtra(EXCLUDE_ROUTES, excludeRoutes)
 startService(moonbounceVPNIntent)
 ```
 
-## Pluggable Transports
+### Pluggable Transports
 
-Moonbounce for Android allows for the use of pluggable transports. (Currently only Shadow servers are supported)
+Moonbounce for Android allows for the use of pluggable transports. (Currently only Shadow servers have been tested and are supported in the demo application)
 1) Use the IP and Port of the transport server you wish to connect to (as mentioned above in the "Starting the VPN Service" section).
 2) Provide the public key for the Shadow server
 3) Toggle the "Use Pluggable Transports" switch.
@@ -100,20 +140,3 @@ moonbounceVPNIntent.putExtra(USE_PLUGGABLE_TRANSPORTS, usePluggableTransports)
 startService(moonbounceVPNIntent)
 ```
 
-## Demo Application
-
-A rudimentory demo application is included in this repository as an example of how to use this library. Install it on any Android device with minimum API 33. This is experimental software and is still under development. The demo is meant only to show an example of how to use the library API and is not intended to be used as a standalone application.
-
-- Moonbounce requires a [Persona](https://github.com/OperatorFoundation/Persona.git) server to be listening on an IP address and Port of your choosing. See the repository for instructions on how to run this server.
-
-- The Moonbounce demo app allows the user to connect to the VPN. At a minimum, the user must enter the server IP and port for the Persona server, and then tap the toggle switch to connect to the VPN. Also available to users are the enter an app to disallow and a route to exclude button. Use these buttons to route internet traffic through your default ISP.
-
-- During the initial connection the user will have to give the application permission to run in the background. Once permission is granted the user will see a key icon appear in the toolbar of the phone (To access the notifications pull down on the top of the phone screen). You are now connected to your VPN.
-
-#### Disallow App (Demo)
-
-Should you prefer to disallow certain apps from using the VPN tunnel, enter the app IDs in the text field provided seperated by spaces. To determine the correct name of the application you want to disallow, the PRINT INSTALLED APPS button will print a list of the names and IDs of all the apps installed on the device you’re running to your IDE.
-
-#### Exclude Route (Demo)
-
-Additionally, Moonbounce can exclude specific routes, enter the IP addresses you wish to exclude, seperated by spaces, in the text field provided.
