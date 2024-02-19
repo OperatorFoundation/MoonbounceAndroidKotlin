@@ -12,7 +12,6 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import androidx.annotation.RequiresApi
 import org.operatorfoundation.shadow.ShadowConfig
 import org.operatorfoundation.shadow.ShadowConnection
 import org.operatorfoundation.transmission.Connection
@@ -124,7 +123,6 @@ class MBAKVpnService : VpnService()
 
                 if (parcelFileDescriptor == null)
                 {
-                    println("🌙 MBAKVpnService: Failed to prepare the builder. Closing the connection.")
                     stopVPN()
 
                     // Failed to create VPN tunnel
@@ -172,8 +170,6 @@ class MBAKVpnService : VpnService()
                     broadcastStatus(vpnStatusNotification, VPN_CONNECTED_STATUS, true)
                 }
             } catch (error: Exception) {
-                println("🌙 MBAKVpnService: Error using ip $transportServerIP and port $transportServerPort. Error message: " + error.message)
-
                 // Failed to create VPN tunnel
                 broadcastStatus(vpnStatusNotification, VPN_CONNECTED_STATUS, false)
             }
@@ -196,7 +192,6 @@ class MBAKVpnService : VpnService()
             }
             catch (vpnToServerError: Exception)
             {
-                println("🪶‼️ MBAKVpnService.runVPNtoServer: Error: $vpnToServerError")
                 stopVPN()
                 break
             }
@@ -214,7 +209,6 @@ class MBAKVpnService : VpnService()
 
         if (numberOfBytesReceived == -1)
         {
-            println("vpnToServer read -1 bytes from the VPN input stream.")
             throw IOException()
         }
 
@@ -259,7 +253,6 @@ class MBAKVpnService : VpnService()
             }
             catch (serverToVPNError: Exception)
             {
-                println("🐾‼️ MoonbounceAndroid.serverToVPN Error: $serverToVPNError")
                 stopVPN()
                 break
             }
@@ -272,7 +265,6 @@ class MBAKVpnService : VpnService()
 
         if (messageData == null)
         {
-            println("🐾‼️ MoonbounceAndroid.serverToVPN: Received a null response from our call to readMessage() closing the connection.")
             stopVPN()
             return
         }
@@ -297,7 +289,6 @@ class MBAKVpnService : VpnService()
 
             for (requestedApp in requestedAppsToExclude)
             {
-                println("🌙 Found an app to exclude: $requestedApp")
                 builder.addDisallowedApplication(requestedApp)
             }
         }
@@ -308,7 +299,6 @@ class MBAKVpnService : VpnService()
 
                 for (requestedRoute in requestedRoutesToExclude)
                 {
-                    println("🌙 Found a route to exclude: $requestedRoute")
                     val excludeRouteInetAddress = InetAddress.getByName(requestedRoute)
                     val excludeRouteIpPrefix = IpPrefix(excludeRouteInetAddress, 32)
 
@@ -318,7 +308,7 @@ class MBAKVpnService : VpnService()
         }
         else
         {
-            println("‼️Attempted to use the exclude route feature with an android API less than 33. Ignoring.")
+            throw Exception("Attempted to use the exclude route feature with an android API less than 33. Ignoring.")
         }
 
         val parcelFileDescriptor = builder.establish()
@@ -345,12 +335,6 @@ class MBAKVpnService : VpnService()
             maybeExcludeRoutes = intent.getStringArrayExtra(EXCLUDE_ROUTES)
             maybeUsePluggableTransports = intent.getBooleanExtra(USE_PLUGGABLE_TRANSPORTS, false)
             this.usePluggableTransport = maybeUsePluggableTransports
-
-            println("MBAKVpnService Server IP is: $maybeIP")
-            println("MBAKVpnService Server Port is: $maybePort")
-            println("MBAKVpnService Disallowed App is: $maybeDisallowedApps")
-            println("MBAKVpnService Exclude Route is: $maybeExcludeRoutes")
-            println("MBAKVpnServer Use Pluggable Transports is: $maybeUsePluggableTransports")
         }
         else
         {
@@ -363,7 +347,6 @@ class MBAKVpnService : VpnService()
         }
         else
         {
-            println("🌙 MBAKVpnService: Tried to connect without a valid IP")
             return false
         }
 
@@ -375,7 +358,6 @@ class MBAKVpnService : VpnService()
         }
         else
         {
-            println("🌙 MBAKVpnService: Tried to connect without a valid port")
             return false
         }
 
@@ -388,22 +370,15 @@ class MBAKVpnService : VpnService()
         {
             disallowedApps = maybeDisallowedApps
         }
-        else
-        {
-            println("MBAKVpnService: No Disallowed App was requested.")
-        }
+
         if (maybeExcludeRoutes != null)
         {
             excludeRoutes = maybeExcludeRoutes
         }
-        else
-        {
-            println("MBAKVpnService: No Exclude Route was requested.")
-        }
+
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun createForegroundNotification()
     {
         val notificationChannelId = "VPN Service Channel"
