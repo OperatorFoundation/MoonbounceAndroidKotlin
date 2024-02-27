@@ -275,8 +275,8 @@ class MainActivity : AppCompatActivity()
         // Set the action (start not stop)
         moonbounceVPNIntent.action = START_VPN_ACTION
 
-        // Provide the activity that should receive the vpn status broadcasts
-        moonbounceVPNIntent.putExtra(APP_PACKAGE, MainActivity::class.java)
+        // Provide the package that should receive the vpn status broadcasts
+        moonbounceVPNIntent.putExtra(APP_PACKAGE, this.packageName)
 
         // Set the IP address of the vpn server (transport server if a transport is being used)
         ipAddress = ipEditText.text.toString()
