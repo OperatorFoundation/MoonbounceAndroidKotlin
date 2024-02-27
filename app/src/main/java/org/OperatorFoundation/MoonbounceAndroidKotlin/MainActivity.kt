@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import org.operatorfoundation.moonbouncevpnservice.APP_PACKAGE
 import org.operatorfoundation.moonbouncevpnservice.DISALLOWED_APPS
 import org.operatorfoundation.moonbouncevpnservice.EXCLUDE_ROUTES
 import org.operatorfoundation.moonbouncevpnservice.MBAKVpnService
@@ -273,6 +274,9 @@ class MainActivity : AppCompatActivity()
     {
         // Set the action (start not stop)
         moonbounceVPNIntent.action = START_VPN_ACTION
+
+        // Provide the activity that should receive the vpn status broadcasts
+        moonbounceVPNIntent.putExtra(APP_PACKAGE, MainActivity::class.java)
 
         // Set the IP address of the vpn server (transport server if a transport is being used)
         ipAddress = ipEditText.text.toString()

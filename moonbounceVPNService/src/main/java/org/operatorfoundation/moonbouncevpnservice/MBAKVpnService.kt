@@ -34,8 +34,9 @@ const val EXCLUDE_ROUTES = "ExcludeRoute"
 const val USE_PLUGGABLE_TRANSPORTS = "UsePluggableTransports"
 const val STOP_VPN_ACTION = "StopMoonbounce"
 const val START_VPN_ACTION = "StartMoonbounce"
+const val APP_PACKAGE = "CallingActivityClass"
 
-class MBAKVpnService : VpnService()
+class MBAKVpnService() : VpnService()
 {
     val sizeInBits = 32
     val maxBatchSize =  250 // bytes
@@ -60,6 +61,10 @@ class MBAKVpnService : VpnService()
     private var builder: Builder = Builder()
     private var disallowedApps: Array<String>? = null
     private var excludeRoutes: Array<String>? = null
+
+    // Needed to create an explicit intent for broadcasting status to an explicit application package name
+    // Defaults to the example app, pass your package name in as an extra in the VPN intent to override this
+    private var applicationPackageName: String = "org.operatorfoundation.moonbounceAndroidKotlin"
 
     companion object
     {
@@ -325,6 +330,7 @@ class MBAKVpnService : VpnService()
         val maybeDisallowedApps: Array<String>?
         val maybeExcludeRoutes: Array<String>?
         val maybeUsePluggableTransports: Boolean
+        val maybeApplicationPackage: String?
 
         if (intent != null)
         {
@@ -334,6 +340,8 @@ class MBAKVpnService : VpnService()
             maybeDisallowedApps = intent.getStringArrayExtra(DISALLOWED_APPS)
             maybeExcludeRoutes = intent.getStringArrayExtra(EXCLUDE_ROUTES)
             maybeUsePluggableTransports = intent.getBooleanExtra(USE_PLUGGABLE_TRANSPORTS, false)
+            maybeApplicationPackage = intent.getStringExtra(APP_PACKAGE)
+
             this.usePluggableTransport = maybeUsePluggableTransports
         }
         else
@@ -376,6 +384,11 @@ class MBAKVpnService : VpnService()
             excludeRoutes = maybeExcludeRoutes
         }
 
+        if (maybeApplicationPackage != null)
+        {
+            applicationPackageName = maybeApplicationPackage
+        }
+
         return true
     }
 
@@ -413,6 +426,7 @@ class MBAKVpnService : VpnService()
     fun broadcastStatus(action: String, statusDescription: String, status: Boolean)
     {
         val intent = Intent()
+        intent.setPackage(applicationPackageName)
         intent.putExtra(statusDescription, status)
         intent.action = action
         sendBroadcast(intent)
