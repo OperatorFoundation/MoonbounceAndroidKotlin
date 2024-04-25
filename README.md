@@ -1,8 +1,8 @@
-# The Operator Foundation
+### The Operator Foundation
 
 [Operator](https://operatorfoundation.org) makes useable tools to help people around the world with censorship, security, and privacy.
 
-# The Moonbounce Project
+## The Moonbounce Project
 The Moonbounce Project is an initiative covering several clients, servers, and libraries. The goal of the project is to provide a simple VPN service that integrates
 Pluggable Transport technology. This allows the Moonbounce VPN to operate on network with restrictive Internet censorship that blocks VPN protocols such as OpenVPN
 and Wireguard. This project, MoonbounceAndroidKotlin, is one of several components of the Moonbounce project.
